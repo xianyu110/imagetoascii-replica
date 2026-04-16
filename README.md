@@ -1,6 +1,6 @@
 # ShipAny Next
 
-A headless SaaS engine for building AI-powered products with Claude Code. Pre-wired business logic (payments, credits, subscriptions, auth, RBAC, i18n) with minimal UI — you build your product pages on top.
+A headless SaaS engine for building AI-powered products with Claude Code. Pre-wired business logic (payments, credits, subscriptions, auth, RBAC, i18n, CMS) with minimal UI — you build your product pages on top.
 
 ## Quick Start
 
@@ -14,13 +14,19 @@ pnpm dev
 ## Features
 
 - **Auth** — Email/password + Google/GitHub OAuth via better-auth
-- **Payment** — Stripe, PayPal, Creem (checkout, subscriptions, webhooks)
+- **Payment** — Stripe, PayPal, Alipay, WeChat Pay (checkout, subscriptions, webhooks)
 - **Credits** — FIFO consumption, expiration, auto-grant on signup
-- **RBAC** — Roles, permissions, wildcard matching
+- **RBAC** — Roles, permissions, wildcard matching, admin panel management
 - **API Keys** — CRUD + validation
+- **CMS** — Categories and posts with full CRUD
 - **i18n** — English + Chinese via next-intl, locale-aware routing
-- **Admin** — User management, role assignment, system settings
-- **Dashboard** — Client-side rendered, shadcn sidebar
+- **Admin Panel** — Full-featured admin with grouped sidebar navigation:
+  - **RBAC** — Users (role assignment), Roles (permission management), Permissions
+  - **Content** — Categories, Posts (with status tabs, category selector)
+  - **Billing** — Payments, Subscriptions, Credits (with type/status tabs)
+  - **Settings** — Collapsible config groups (General, Auth, Payment, Email, Storage, AI)
+  - System switcher dropdown (Admin / Dashboard / Landing)
+- **Dashboard** — Client-side rendered with shadcn sidebar
 - **MDX Pages** — Privacy policy, terms of service, extensible via skill
 - **Database** — SQLite (dev) / PostgreSQL / MySQL via Drizzle ORM
 - **All code self-contained** — no external packages for business logic
@@ -37,14 +43,31 @@ pnpm dev
 ```
 src/
 ├── core/           # Infrastructure (db, auth, payment, email, storage, ai, i18n)
-├── modules/        # Business logic (payment, credits, subscriptions, apikeys, rbac)
+├── modules/        # Business logic (payment, credits, subscriptions, apikeys, rbac, posts, taxonomy)
 ├── config/         # Environment, DB schema, locale translations
 ├── app/
 │   ├── [locale]/   # Pages (landing, auth, dashboard, admin, legal)
 │   └── api/        # REST endpoints
-├── components/     # Shared UI (app-layout, app-sidebar, user-menu, shadcn)
+├── components/     # Shared UI (app-layout, app-sidebar, data-table, user-menu, shadcn)
 └── lib/            # Utilities (hash, resp, cookie, cache, rate-limit)
 ```
+
+## Admin Panel
+
+The admin panel (`/admin`) provides a complete back-office interface:
+
+| Section | Pages | Features |
+|---------|-------|----------|
+| Overview | Dashboard | Stats overview |
+| RBAC | Users, Roles, Permissions | Full CRUD, role assignment, permission management |
+| Content | Categories, Posts | Full CRUD, status tabs, category selector |
+| Billing | Payments, Subscriptions, Credits | Server-side pagination, type/status tabs, search |
+| Settings | System config | Collapsible groups, tabbed sections, all i18n |
+
+All admin pages include:
+- Server-side paginated data tables with search
+- Dialog-based create/edit/delete forms
+- Complete English and Chinese translations
 
 ## Commands
 
@@ -75,6 +98,7 @@ src/
 # Required
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_APP_NAME=My App
+NEXT_PUBLIC_APP_LOGO=/logo.png
 DATABASE_PROVIDER=sqlite
 DATABASE_URL=file:data/local.db
 AUTH_SECRET=generate-with-openssl-rand-base64-32
@@ -88,4 +112,6 @@ REPLICATE_API_TOKEN=
 
 ## License
 
-MIT
+This is proprietary software. See [LICENSE](./LICENSE) for the full license agreement.
+
+**ShipAny** — [shipany.ai](https://shipany.ai)

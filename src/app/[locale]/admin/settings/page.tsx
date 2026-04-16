@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Save } from "lucide-react";
+import { Save, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +36,16 @@ export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState("general");
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
+  function toggleCollapse(name: string) {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }
 
   const tabs = getSettingTabs();
   const groups = getSettingGroups();
@@ -128,23 +138,37 @@ export default function AdminSettingsPage() {
 
           return (
             <Card key={group.name}>
-              <CardHeader>
-                <CardTitle>{t(`settings.groups.${group.name}.title`)}</CardTitle>
-                {group.description && (
-                  <CardDescription>{t(`settings.groups.${group.name}.description`)}</CardDescription>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {groupSettings.map((setting) => (
-                  <SettingField
-                    key={setting.name}
-                    setting={setting}
-                    label={t(`settings.fields.${setting.name}`)}
-                    value={configs[setting.name] || ""}
-                    onChange={(v) => handleChange(setting.name, v)}
+              <CardHeader
+                className="cursor-pointer select-none"
+                onClick={() => toggleCollapse(group.name)}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>{t(`settings.groups.${group.name}.title`)}</CardTitle>
+                    {group.description && (
+                      <CardDescription>{t(`settings.groups.${group.name}.description`)}</CardDescription>
+                    )}
+                  </div>
+                  <ChevronDown
+                    className={`size-5 text-muted-foreground transition-transform ${
+                      collapsed.has(group.name) ? "-rotate-90" : ""
+                    }`}
                   />
-                ))}
-              </CardContent>
+                </div>
+              </CardHeader>
+              {!collapsed.has(group.name) && (
+                <CardContent className="space-y-4">
+                  {groupSettings.map((setting) => (
+                    <SettingField
+                      key={setting.name}
+                      setting={setting}
+                      label={t(`settings.fields.${setting.name}`)}
+                      value={configs[setting.name] || ""}
+                      onChange={(v) => handleChange(setting.name, v)}
+                    />
+                  ))}
+                </CardContent>
+              )}
             </Card>
           );
         })

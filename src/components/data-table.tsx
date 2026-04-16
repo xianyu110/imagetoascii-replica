@@ -107,14 +107,11 @@ export function DataTable<T>({
         </Table>
       </div>
 
-      {total > pageSize && (
-        <div className="flex items-center justify-between px-2">
-          <p className="text-sm text-muted-foreground">
-            {t("table.page_info", {
-              current: page,
-              total: totalPages,
-            })}
-          </p>
+      <div className="flex items-center justify-between px-2">
+        <p className="text-sm text-muted-foreground">
+          {t("table.total", { count: total })}
+        </p>
+        {total > pageSize && (
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -135,8 +132,8 @@ export function DataTable<T>({
               <ChevronRight className="size-4" />
             </Button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -5,13 +5,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -288,10 +282,6 @@ export default function RolesPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>{t("roles.all_roles")}</CardTitle>
-          <CardDescription>{t("roles.count", { count: total })}</CardDescription>
-        </CardHeader>
         <CardContent>
           <DataTable
             columns={columns}

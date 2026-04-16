@@ -32,6 +32,7 @@
   },
   "table": {
     "no_data": "No data",
+    "total": "{count} records",
     "page_info": "Page {current} of {total}",
     "previous": "Previous",
     "next": "Next"

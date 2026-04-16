@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -203,7 +203,6 @@ export default function PostsPage() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle>{t("posts.all")}</CardTitle><CardDescription>{t("posts.count", { count: total })}</CardDescription></CardHeader>
         <CardContent>
           <DataTable columns={columns} data={posts} total={total} page={page} pageSize={PAGE_SIZE} onPageChange={setPage} rowKey={(p) => p.id} emptyText={t("posts.no_data")} search={search} onSearchChange={setSearch} />
         </CardContent>

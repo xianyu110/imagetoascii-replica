@@ -3,7 +3,7 @@
 import { type LucideIcon, ChevronsUpDown, LayoutDashboard, Shield, Globe } from "lucide-react";
 import Image from "next/image";
 import { Link, usePathname } from "@/core/i18n/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { envConfigs } from "@/config";
 import {
   Sidebar,
@@ -20,6 +20,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -54,6 +55,7 @@ export function AppSidebar({
 }) {
   const pathname = usePathname();
   const t = useTranslations("common");
+  const locale = useLocale();
 
   // Group nav items
   const groups: { label?: string; items: NavItem[] }[] = [];
@@ -98,27 +100,29 @@ export function AppSidebar({
                 </div>
                 <ChevronsUpDown className="size-4 text-muted-foreground" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]" align="start">
-                <DropdownMenuLabel>{t("systems.label")}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {SYSTEMS.map((sys) => {
-                  const Icon = sys.icon;
-                  const isCurrent = sys.key === currentSystem.key;
-                  return (
-                    <DropdownMenuItem
-                      key={sys.key}
-                      disabled={isCurrent}
-                      onClick={() => {
-                        if (!isCurrent) {
-                          window.open(sys.href, "_blank");
-                        }
-                      }}
-                    >
-                      <Icon className="size-4" />
-                      {t(`systems.${sys.key}`)}
-                    </DropdownMenuItem>
-                  );
-                })}
+              <DropdownMenuContent side="right" align="start">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>{t("systems.label")}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {SYSTEMS.map((sys) => {
+                    const Icon = sys.icon;
+                    const isCurrent = sys.key === currentSystem.key;
+                    return (
+                      <DropdownMenuItem
+                        key={sys.key}
+                        disabled={isCurrent}
+                        onClick={() => {
+                          if (!isCurrent) {
+                            window.open(`/${locale}${sys.href}`, "_blank");
+                          }
+                        }}
+                      >
+                        <Icon className="size-4" />
+                        {t(`systems.${sys.key}`)}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

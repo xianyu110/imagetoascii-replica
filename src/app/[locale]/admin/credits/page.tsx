@@ -2,13 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/data-table";
 import { cn } from "@/lib/utils";
 
@@ -152,10 +146,6 @@ export default function CreditsPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>{t("credits.all_credits")}</CardTitle>
-          <CardDescription>{t("credits.count", { count: total })}</CardDescription>
-        </CardHeader>
         <CardContent>
           <DataTable
             columns={columns}
