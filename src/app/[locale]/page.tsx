@@ -22,17 +22,6 @@ export default async function HomePage() {
     { href: "#pricing", label: t("nav.pricing") },
   ];
 
-  const capabilities = [
-    t("chips.auth"),
-    t("chips.payment"),
-    t("chips.subscription"),
-    t("chips.credits"),
-    t("chips.rbac"),
-    t("chips.i18n"),
-    t("chips.cms"),
-    t("chips.api_keys"),
-  ];
-
   const features = [
     { title: t("features.auth.title"), description: t("features.auth.description") },
     { title: t("features.payment.title"), description: t("features.payment.description") },
@@ -85,19 +74,7 @@ export default async function HomePage() {
             {t("hero.subheadline")}
           </p>
 
-          {/* Action chips */}
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-            {capabilities.map((cap) => (
-              <span
-                key={cap}
-                className="inline-flex items-center rounded-full border border-border bg-muted/50 px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-default"
-              >
-                {cap}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex items-center justify-center gap-3 pt-4">
+          <div className="flex items-center justify-center gap-3 pt-2">
             <Link
               href="/sign-up"
               className={cn(buttonVariants({ size: "lg" }), "gap-2 rounded-full px-8")}
