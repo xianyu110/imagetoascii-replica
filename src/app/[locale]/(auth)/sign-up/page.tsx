@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -28,6 +27,7 @@ export default function SignUpPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [configs, setConfigs] = useState<Record<string, string>>({});
@@ -54,13 +54,20 @@ export default function SignUpPage() {
       .catch(() => {});
   }, []);
 
+  const configsLoaded = Object.keys(configs).length > 0;
+  const emailEnabled = configs.email_auth_enabled !== "false";
   const googleEnabled = configs.google_auth_enabled === "true";
   const githubEnabled = configs.github_auth_enabled === "true";
   const hasSocial = googleEnabled || githubEnabled;
+  const hasAnyMethod = emailEnabled || hasSocial;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    if (password !== confirmPassword) {
+      setError(t("sign.password_mismatch"));
+      return;
+    }
     setLoading(true);
     try {
       const result = await signUp.email({ name, email, password });
@@ -83,18 +90,22 @@ export default function SignUpPage() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <Link href="/" className="flex items-center gap-2 self-center font-medium">
-          <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
-            {(envConfigs.app_name || "A").charAt(0)}
-          </div>
+        <Link href="/" className="self-center font-serif italic text-lg">
           {envConfigs.app_name}
         </Link>
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-xl">{t("sign.sign_up_title")}</CardTitle>
-            <CardDescription>{t("sign.sign_up_description")}</CardDescription>
           </CardHeader>
           <CardContent>
+            {configsLoaded && !hasAnyMethod ? (
+              <div className="rounded-lg border border-dashed p-6 text-center">
+                <p className="text-sm font-medium">{t("sign.no_methods_title")}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {t("sign.no_methods_description")}
+                </p>
+              </div>
+            ) : (
             <form onSubmit={handleSubmit}>
               <FieldGroup>
                 {error && (
@@ -124,59 +135,76 @@ export default function SignUpPage() {
                   </Field>
                 )}
 
-                {hasSocial && (
+                {hasSocial && emailEnabled && (
                   <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                     {t("sign.or")}
                   </FieldSeparator>
                 )}
 
-                <Field>
-                  <FieldLabel htmlFor="name">{t("sign.name_title")}</FieldLabel>
-                  <Input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    placeholder={t("sign.name_placeholder")}
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="email">{t("sign.email_title")}</FieldLabel>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    placeholder={t("sign.email_placeholder")}
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="password">{t("sign.password_title")}</FieldLabel>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={8}
-                    placeholder={t("sign.password_placeholder")}
-                  />
-                </Field>
-                <Field>
-                  <Button type="submit" disabled={loading}>
-                    {loading ? "..." : t("sign.sign_up_title")}
-                  </Button>
-                  <FieldDescription className="text-center">
-                    {t("sign.already_have_account")}{" "}
-                    <Link href="/sign-in" className="underline underline-offset-4">
-                      {t("sign.sign_in_title")}
-                    </Link>
-                  </FieldDescription>
-                </Field>
+                {emailEnabled && (
+                  <>
+                    <Field>
+                      <FieldLabel htmlFor="name">{t("sign.name_title")}</FieldLabel>
+                      <Input
+                        id="name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                        placeholder={t("sign.name_placeholder")}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="email">{t("sign.email_title")}</FieldLabel>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        placeholder={t("sign.email_placeholder")}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="password">{t("sign.password_title")}</FieldLabel>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={8}
+                        placeholder={t("sign.password_placeholder")}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="confirmPassword">{t("sign.confirm_password_title")}</FieldLabel>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                        minLength={8}
+                        placeholder={t("sign.confirm_password_placeholder")}
+                      />
+                    </Field>
+                    <Field>
+                      <Button type="submit" disabled={loading}>
+                        {loading ? "..." : t("sign.sign_up_title")}
+                      </Button>
+                      <FieldDescription className="text-center">
+                        {t("sign.already_have_account")}{" "}
+                        <Link href="/sign-in" className="underline underline-offset-4">
+                          {t("sign.sign_in_title")}
+                        </Link>
+                      </FieldDescription>
+                    </Field>
+                  </>
+                )}
               </FieldGroup>
             </form>
+            )}
           </CardContent>
         </Card>
       </div>

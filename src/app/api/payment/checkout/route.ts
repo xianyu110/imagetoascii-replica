@@ -22,9 +22,11 @@ export async function POST(req: Request) {
       return respErr('Missing product_id or price');
     }
 
-    // Check for test amount in DB config
+    // Check for test amount in DB config (per provider)
     const configs = await getAllConfigs();
-    const testAmount = configs.payment_test_amount ? parseInt(configs.payment_test_amount) : 0;
+    const providerKey = payment_provider || configs.default_payment_provider;
+    const testAmountRaw = providerKey ? configs[`${providerKey}_test_amount`] : undefined;
+    const testAmount = testAmountRaw ? parseInt(testAmountRaw) : 0;
     const actualPrice = testAmount > 0 ? testAmount : price;
 
     // Build success/cancel URLs

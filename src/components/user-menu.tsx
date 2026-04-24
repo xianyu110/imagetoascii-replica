@@ -1,9 +1,20 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import { useRouter } from "@/core/i18n/navigation";
-import { LogOutIcon, EllipsisVerticalIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { usePathname, useRouter } from "@/core/i18n/navigation";
+import { useTheme } from "next-themes";
+import {
+  LogOutIcon,
+  EllipsisVerticalIcon,
+  LanguagesIcon,
+  SunIcon,
+  MoonIcon,
+  MonitorIcon,
+  PaletteIcon,
+  CheckIcon,
+} from "lucide-react";
 import { signOut } from "@/core/auth/client";
+import { localeNames, locales } from "@/config/locale";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -12,6 +23,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -32,11 +46,18 @@ export function UserMenu({
 }) {
   const t = useTranslations("common");
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = useLocale();
+  const { theme, setTheme } = useTheme();
   const { isMobile } = useSidebar();
 
   async function handleSignOut() {
     await signOut();
     router.push("/");
+  }
+
+  function handleLocaleSwitch(newLocale: string) {
+    router.replace(pathname, { locale: newLocale });
   }
 
   return (
@@ -81,8 +102,55 @@ export function UserMenu({
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="gap-2 px-2 py-2">
+                <LanguagesIcon className="size-4" />
+                <span className="flex-1">{localeNames[locale] || locale}</span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                {locales.map((loc) => (
+                  <DropdownMenuItem
+                    key={loc}
+                    onClick={() => handleLocaleSwitch(loc)}
+                  >
+                    <span className="flex-1">{localeNames[loc] || loc}</span>
+                    {loc === locale && <CheckIcon className="size-3.5" />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="gap-2 px-2 py-2">
+                <PaletteIcon className="size-4" />
+                <span className="flex-1">
+                  {theme === "dark"
+                    ? t("nav.theme_dark")
+                    : theme === "light"
+                    ? t("nav.theme_light")
+                    : t("nav.theme_system")}
+                </span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem onClick={() => setTheme("light")}>
+                  <SunIcon className="size-4" />
+                  <span className="flex-1">{t("nav.theme_light")}</span>
+                  {theme === "light" && <CheckIcon className="size-3.5" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                  <MoonIcon className="size-4" />
+                  <span className="flex-1">{t("nav.theme_dark")}</span>
+                  {theme === "dark" && <CheckIcon className="size-3.5" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("system")}>
+                  <MonitorIcon className="size-4" />
+                  <span className="flex-1">{t("nav.theme_system")}</span>
+                  {theme === "system" && <CheckIcon className="size-3.5" />}
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
-              <LogOutIcon />
+              <LogOutIcon className="size-4" />
               {t("sign.sign_out_title")}
             </DropdownMenuItem>
           </DropdownMenuContent>

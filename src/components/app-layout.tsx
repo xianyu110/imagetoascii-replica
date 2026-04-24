@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSession } from "@/core/auth/client";
 import { useRouter } from "@/core/i18n/navigation";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { LocaleSelector } from "@/components/locale-selector";
 import { AppSidebar, type NavItem } from "@/components/app-sidebar";
 import { UserMenu } from "@/components/user-menu";
 import {
@@ -43,6 +41,7 @@ export function AppLayout({
     if (isPending) return;
 
     if (!session?.user) {
+      setAuthorized(false);
       router.push("/sign-in");
       return;
     }
@@ -63,7 +62,7 @@ export function AppLayout({
     }
   }, [isPending, session, router, requirePermission, unauthorizedRedirect]);
 
-  if (isPending || !authorized) {
+  if (isPending || !authorized || !session?.user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
@@ -83,9 +82,9 @@ export function AppLayout({
         footerNavItems={footerNavItems}
         footer={
           <UserMenu
-            name={session!.user.name || "User"}
-            email={session!.user.email}
-            image={session!.user.image}
+            name={session.user.name || "User"}
+            email={session.user.email}
+            image={session.user.image}
           />
         }
       />
@@ -95,11 +94,9 @@ export function AppLayout({
             <SidebarTrigger className="-ml-1" />
           </div>
           <div className="flex-1" />
-          <div className="flex items-center gap-1 px-4">
-            {headerExtra}
-            <LocaleSelector />
-            <ThemeToggle />
-          </div>
+          {headerExtra && (
+            <div className="flex items-center gap-1 px-4">{headerExtra}</div>
+          )}
         </header>
         <main className="flex-1 overflow-auto">
           {children}

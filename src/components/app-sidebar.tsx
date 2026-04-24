@@ -1,10 +1,8 @@
 "use client";
 
 import { type LucideIcon, ChevronsUpDown, LayoutDashboard, Shield, Globe } from "lucide-react";
-import Image from "next/image";
 import { Link, usePathname } from "@/core/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
-import { envConfigs } from "@/config";
 import {
   Sidebar,
   SidebarContent,
@@ -83,21 +81,9 @@ export function AppSidebar({
               <DropdownMenuTrigger
                 className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer outline-none"
               >
-                <div className="flex size-6 items-center justify-center">
-                  <Image
-                    src={envConfigs.app_logo}
-                    alt={typeof brand === 'string' ? brand : 'Logo'}
-                    width={24}
-                    height={24}
-                    className="size-6 rounded-md"
-                  />
-                </div>
-                <div className="flex flex-1 flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">{brand}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {t(`systems.${currentSystem.key}`)}
-                  </span>
-                </div>
+                <span className="flex-1 font-serif italic text-lg leading-none">
+                  {brand}
+                </span>
                 <ChevronsUpDown className="size-4 text-muted-foreground" />
               </DropdownMenuTrigger>
               <DropdownMenuContent side="right" align="start">

@@ -25,6 +25,7 @@ function getDatabaseProvider(provider: string): 'sqlite' | 'pg' | 'mysql' {
 
 let authInstance: any;
 let socialConfigsLoaded = false;
+let emailEnabledLoaded = true;
 
 function getSocialProviders(configs: Record<string, string>) {
   const providers: Record<string, any> = {};
@@ -56,9 +57,19 @@ export function getAuth(configs?: Record<string, string>) {
     }
   }
 
+  // Rebuild if the email-auth flag changed
+  if (configs) {
+    const nextEmailEnabled = configs.email_auth_enabled !== 'false';
+    if (nextEmailEnabled !== emailEnabledLoaded) {
+      authInstance = null;
+      emailEnabledLoaded = nextEmailEnabled;
+    }
+  }
+
   if (authInstance) return authInstance;
 
   const socialProviders = configs ? getSocialProviders(configs) : {};
+  const emailAndPasswordEnabled = configs ? configs.email_auth_enabled !== 'false' : true;
 
   authInstance = betterAuth({
     appName: envConfigs.app_name,
@@ -88,7 +99,7 @@ export function getAuth(configs?: Record<string, string>) {
     advanced: {
       database: { generateId: () => getUuid() },
     },
-    emailAndPassword: { enabled: true },
+    emailAndPassword: { enabled: emailAndPasswordEnabled },
     logger: { disabled: true },
   } satisfies BetterAuthOptions);
 

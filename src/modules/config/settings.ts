@@ -14,6 +14,7 @@ export interface Setting {
   tip?: string;
   group: string;
   tab: string;
+  defaultValue?: string;
 }
 
 export interface SettingGroup {
@@ -54,6 +55,7 @@ export function getSettingGroups(): SettingGroup[] {
     // Payment
     { name: 'basic_payment', title: 'Basic', description: 'Payment general settings', tab: 'payment' },
     { name: 'stripe', title: 'Stripe', description: 'Stripe payment gateway', tab: 'payment' },
+    { name: 'creem', title: 'Creem', description: 'Creem payment gateway', tab: 'payment' },
     { name: 'paypal', title: 'PayPal', description: 'PayPal payment gateway', tab: 'payment' },
     { name: 'alipay', title: 'Alipay', description: 'Alipay payment gateway (native)', tab: 'payment' },
     { name: 'wechat', title: 'WeChat Pay', description: 'WeChat Pay gateway (native)', tab: 'payment' },
@@ -89,7 +91,7 @@ export function getSettings(): Setting[] {
     { name: 'initial_credits_description', title: 'Description', type: 'text', placeholder: 'Welcome bonus', group: 'credit', tab: 'general' },
 
     // ─── Auth / Email ────────────────────────────────────────────────
-    { name: 'email_auth_enabled', title: 'Enable email auth', type: 'switch', group: 'email_auth', tab: 'auth' },
+    { name: 'email_auth_enabled', title: 'Enable email auth', type: 'switch', group: 'email_auth', tab: 'auth', defaultValue: 'true' },
 
     // ─── Auth / Google ───────────────────────────────────────────────
     { name: 'google_auth_enabled', title: 'Enable Google auth', type: 'switch', group: 'google_auth', tab: 'auth' },
@@ -103,11 +105,11 @@ export function getSettings(): Setting[] {
 
     // ─── Payment / Basic ─────────────────────────────────────────────
     { name: 'select_payment_enabled', title: 'Show payment method selector', type: 'switch', group: 'basic_payment', tab: 'payment' },
-    { name: 'payment_test_amount', title: 'Test amount (分)', type: 'number', placeholder: '留空使用实际金额，填 1 则支付 ¥0.01', group: 'basic_payment', tab: 'payment' },
     {
       name: 'default_payment_provider', title: 'Default provider', type: 'select',
       options: [
         { label: 'Stripe', value: 'stripe' },
+        { label: 'Creem', value: 'creem' },
         { label: 'PayPal', value: 'paypal' },
         { label: 'Alipay', value: 'alipay' },
         { label: 'WeChat Pay', value: 'wechat' },
@@ -120,6 +122,21 @@ export function getSettings(): Setting[] {
     { name: 'stripe_api_key', title: 'Secret Key', type: 'password', placeholder: 'sk_xxx', group: 'stripe', tab: 'payment' },
     { name: 'stripe_publishable_key', title: 'Publishable Key', type: 'text', placeholder: 'pk_xxx', group: 'stripe', tab: 'payment' },
     { name: 'stripe_webhook_secret', title: 'Webhook Secret', type: 'password', placeholder: 'whsec_xxx', group: 'stripe', tab: 'payment' },
+    { name: 'stripe_test_amount', title: 'Test amount (cents)', type: 'number', placeholder: '留空使用实际金额，填 1 则支付 $0.01', group: 'stripe', tab: 'payment' },
+
+    // ─── Payment / Creem ─────────────────────────────────────────────
+    { name: 'creem_enabled', title: 'Enable Creem', type: 'switch', group: 'creem', tab: 'payment' },
+    {
+      name: 'creem_environment', title: 'Environment', type: 'select',
+      options: [
+        { label: 'Sandbox', value: 'sandbox' },
+        { label: 'Production', value: 'production' },
+      ],
+      group: 'creem', tab: 'payment', defaultValue: 'sandbox',
+    },
+    { name: 'creem_api_key', title: 'API Key', type: 'password', placeholder: 'creem_xxx', group: 'creem', tab: 'payment' },
+    { name: 'creem_signing_secret', title: 'Signing Secret', type: 'password', placeholder: 'whsec_xxx', group: 'creem', tab: 'payment' },
+    { name: 'creem_test_amount', title: 'Test amount (cents)', type: 'number', placeholder: '留空使用实际金额，填 1 则支付 $0.01', group: 'creem', tab: 'payment' },
 
     // ─── Payment / PayPal ────────────────────────────────────────────
     { name: 'paypal_enabled', title: 'Enable PayPal', type: 'switch', group: 'paypal', tab: 'payment' },
@@ -134,6 +151,7 @@ export function getSettings(): Setting[] {
       ],
       group: 'paypal', tab: 'payment',
     },
+    { name: 'paypal_test_amount', title: 'Test amount (cents)', type: 'number', placeholder: '留空使用实际金额，填 1 则支付 $0.01', group: 'paypal', tab: 'payment' },
 
     // ─── Payment / Alipay ─────────────────────────────────────────────
     { name: 'alipay_enabled', title: 'Enable Alipay', type: 'switch', group: 'alipay', tab: 'payment' },
@@ -141,6 +159,7 @@ export function getSettings(): Setting[] {
     { name: 'alipay_private_key', title: 'Private Key (RSA2)', type: 'textarea', placeholder: 'MIIEvQIBADANBgkq...', group: 'alipay', tab: 'payment' },
     { name: 'alipay_public_key', title: 'Alipay Public Key', type: 'textarea', placeholder: 'MIIBIjANBgkq...', group: 'alipay', tab: 'payment' },
     { name: 'alipay_notify_url', title: 'Notify URL (Webhook)', type: 'text', placeholder: 'https://hersoul.cn/api/payment/notify/alipay', group: 'alipay', tab: 'payment' },
+    { name: 'alipay_test_amount', title: 'Test amount (分)', type: 'number', placeholder: '留空使用实际金额，填 1 则支付 ¥0.01', group: 'alipay', tab: 'payment' },
 
     // ─── Payment / WeChat Pay ───────────────────────────────────────
     { name: 'wechat_enabled', title: 'Enable WeChat Pay', type: 'switch', group: 'wechat', tab: 'payment' },
@@ -150,6 +169,7 @@ export function getSettings(): Setting[] {
     { name: 'wechat_private_key', title: 'Merchant Private Key (PEM)', type: 'textarea', placeholder: 'MIIEvgIBADANBgkq...', group: 'wechat', tab: 'payment' },
     { name: 'wechat_serial_no', title: 'Certificate Serial No', type: 'text', placeholder: 'xxx', group: 'wechat', tab: 'payment' },
     { name: 'wechat_notify_url', title: 'Notify URL (Webhook)', type: 'text', placeholder: 'https://hersoul.cn/api/payment/notify/wechat', group: 'wechat', tab: 'payment' },
+    { name: 'wechat_test_amount', title: 'Test amount (分)', type: 'number', placeholder: '留空使用实际金额，填 1 则支付 ¥0.01', group: 'wechat', tab: 'payment' },
 
     // ─── Email / Resend ──────────────────────────────────────────────
     { name: 'resend_api_key', title: 'API Key', type: 'password', placeholder: 're_xxx', group: 'resend', tab: 'email' },

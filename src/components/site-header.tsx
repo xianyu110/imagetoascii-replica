@@ -52,7 +52,7 @@ export function SiteHeader({
           <LocaleSelector />
           <ThemeToggle />
           <Link
-            href="/sign-up"
+            href="/sign-in"
             className={cn(buttonVariants({ size: "sm" }), "gap-1")}
           >
             {t("nav.get_started")}
@@ -91,7 +91,7 @@ export function SiteHeader({
             <ThemeToggle />
             <div className="flex-1" />
             <Link
-              href="/sign-up"
+              href="/sign-in"
               className={cn(buttonVariants({ size: "sm" }), "gap-1")}
               onClick={() => setMobileOpen(false)}
             >

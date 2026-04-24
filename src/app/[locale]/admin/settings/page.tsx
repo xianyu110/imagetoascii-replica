@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useMessages, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Save, ChevronDown } from "lucide-react";
+import { Save, ChevronDown, FlaskConical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,14 +28,20 @@ import {
   getSettings,
   type Setting,
 } from "@/modules/config/settings";
+import { getTestSpec } from "@/modules/config/settings-test-specs";
+import { SettingsTestDialog } from "@/components/admin/settings-test-dialog";
 
 export default function AdminSettingsPage() {
   const t = useTranslations("admin");
+  const messages = useMessages() as Record<string, any>;
+  const placeholders: Record<string, string> =
+    messages?.admin?.settings?.placeholders || {};
   const [configs, setConfigs] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState("general");
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [testingGroup, setTestingGroup] = useState<string | null>(null);
 
   function toggleCollapse(name: string) {
     setCollapsed((prev) => {
@@ -97,7 +103,7 @@ export default function AdminSettingsPage() {
   const tabSettings = settings.filter((s) => s.tab === activeTab);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 md:max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{t("settings.title")}</h1>
@@ -135,6 +141,7 @@ export default function AdminSettingsPage() {
           const groupSettings = tabSettings.filter((s) => s.group === group.name);
           if (groupSettings.length === 0) return null;
 
+          const testSpec = getTestSpec(group.name);
           return (
             <Card key={group.name}>
               <CardHeader
@@ -143,11 +150,27 @@ export default function AdminSettingsPage() {
               >
                 <div className="flex items-center justify-between">
                   <CardTitle>{t(`settings.groups.${group.name}.title`)}</CardTitle>
-                  <ChevronDown
-                    className={`size-5 text-muted-foreground transition-transform ${
-                      collapsed.has(group.name) ? "-rotate-90" : ""
-                    }`}
-                  />
+                  <div className="flex items-center gap-2">
+                    {testSpec && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTestingGroup(group.name);
+                        }}
+                      >
+                        <FlaskConical className="size-3.5" />
+                        {t("settings.test.button")}
+                      </Button>
+                    )}
+                    <ChevronDown
+                      className={`size-5 text-muted-foreground transition-transform ${
+                        collapsed.has(group.name) ? "-rotate-90" : ""
+                      }`}
+                    />
+                  </div>
                 </div>
               </CardHeader>
               {!collapsed.has(group.name) && (
@@ -157,7 +180,8 @@ export default function AdminSettingsPage() {
                       key={setting.name}
                       setting={setting}
                       label={t(`settings.fields.${setting.name}`)}
-                      value={configs[setting.name] || ""}
+                      placeholder={placeholders[setting.name] ?? setting.placeholder}
+                      value={configs[setting.name] ?? setting.defaultValue ?? ""}
                       onChange={(v) => handleChange(setting.name, v)}
                     />
                   ))}
@@ -167,6 +191,16 @@ export default function AdminSettingsPage() {
           );
         })
       )}
+
+      {testingGroup && getTestSpec(testingGroup) && (
+        <SettingsTestDialog
+          open={!!testingGroup}
+          onOpenChange={(open) => !open && setTestingGroup(null)}
+          group={testingGroup}
+          spec={getTestSpec(testingGroup)!}
+          groupTitle={t(`settings.groups.${testingGroup}.title`)}
+        />
+      )}
     </div>
   );
 }
@@ -174,23 +208,27 @@ export default function AdminSettingsPage() {
 function SettingField({
   setting,
   label,
+  placeholder,
   value,
   onChange,
 }: {
   setting: Setting;
   label: string;
+  placeholder?: string;
   value: string;
   onChange: (value: string) => void;
 }) {
   if (setting.type === "switch") {
     return (
-      <div className="flex items-center justify-between">
+      <div className="space-y-2">
         <Label htmlFor={setting.name}>{label}</Label>
-        <Switch
-          id={setting.name}
-          checked={value === "true"}
-          onCheckedChange={(checked) => onChange(checked ? "true" : "false")}
-        />
+        <div>
+          <Switch
+            id={setting.name}
+            checked={value === "true"}
+            onCheckedChange={(checked) => onChange(checked ? "true" : "false")}
+          />
+        </div>
       </div>
     );
   }
@@ -201,7 +239,7 @@ function SettingField({
         <Label htmlFor={setting.name}>{label}</Label>
         <Select value={value} onValueChange={(v) => onChange(v || "")}>
           <SelectTrigger>
-            <SelectValue placeholder={setting.placeholder || "Select..."} />
+            <SelectValue placeholder={placeholder || "Select..."} />
           </SelectTrigger>
           <SelectContent>
             {setting.options.map((opt) => (
@@ -223,7 +261,7 @@ function SettingField({
           id={setting.name}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={setting.placeholder}
+          placeholder={placeholder}
           rows={3}
           className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
@@ -239,7 +277,7 @@ function SettingField({
         type={setting.type === "password" ? "password" : setting.type === "number" ? "number" : "text"}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={setting.placeholder}
+        placeholder={placeholder}
       />
     </div>
   );

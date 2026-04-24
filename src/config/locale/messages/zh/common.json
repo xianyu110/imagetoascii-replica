@@ -12,6 +12,9 @@
     "email_placeholder": "输入邮箱地址",
     "password_title": "密码",
     "password_placeholder": "输入密码",
+    "confirm_password_title": "确认密码",
+    "confirm_password_placeholder": "再次输入密码",
+    "password_mismatch": "两次输入的密码不一致",
     "name_title": "姓名",
     "name_placeholder": "输入姓名",
     "no_account": "还没有账号？",
@@ -19,11 +22,17 @@
     "or": "或者继续使用",
     "sign_out_title": "退出登录",
     "google_sign_in": "使用 Google 登录",
-    "github_sign_in": "使用 GitHub 登录"
+    "github_sign_in": "使用 GitHub 登录",
+    "no_methods_title": "暂无可用的登录方式",
+    "no_methods_description": "管理员尚未启用任何登录方式，请稍后再试。"
   },
   "pricing": {
     "get_started": "立即开始",
-    "processing": "处理中..."
+    "processing": "处理中...",
+    "choose_payment": "选择支付方式",
+    "choose_payment_desc": "选择你想使用的支付渠道。",
+    "payment_for": "{plan} — {price}",
+    "payment_for_plan": "{plan}"
   },
   "systems": {
     "label": "切换系统",
@@ -47,6 +56,9 @@
     "billing": "账单",
     "apikeys": "API 密钥",
     "sign_in": "登录",
-    "get_started": "开始使用"
+    "get_started": "开始使用",
+    "theme_light": "浅色模式",
+    "theme_dark": "深色模式",
+    "theme_system": "跟随系统"
   }
 }

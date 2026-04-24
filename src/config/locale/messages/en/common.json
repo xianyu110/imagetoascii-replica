@@ -12,6 +12,9 @@
     "email_placeholder": "Enter your email",
     "password_title": "Password",
     "password_placeholder": "Enter your password",
+    "confirm_password_title": "Confirm Password",
+    "confirm_password_placeholder": "Re-enter your password",
+    "password_mismatch": "Passwords do not match",
     "name_title": "Name",
     "name_placeholder": "Enter your name",
     "no_account": "Don't have an account?",
@@ -19,11 +22,17 @@
     "or": "Or continue with",
     "sign_out_title": "Sign Out",
     "google_sign_in": "Sign in with Google",
-    "github_sign_in": "Sign in with GitHub"
+    "github_sign_in": "Sign in with GitHub",
+    "no_methods_title": "No sign-in methods available",
+    "no_methods_description": "The administrator hasn't enabled any sign-in methods yet. Please check back later."
   },
   "pricing": {
     "get_started": "Get Started",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "choose_payment": "Choose payment method",
+    "choose_payment_desc": "Pick how you'd like to pay.",
+    "payment_for": "{plan} — {price}",
+    "payment_for_plan": "{plan}"
   },
   "systems": {
     "label": "Switch System",
@@ -47,6 +56,9 @@
     "billing": "Billing",
     "apikeys": "API Keys",
     "sign_in": "Sign In",
-    "get_started": "Get Started"
+    "get_started": "Get Started",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "theme_system": "System"
   }
 }

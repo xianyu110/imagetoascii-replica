@@ -1,5 +1,5 @@
 import { eq, and, desc, isNull } from 'drizzle-orm';
-import { PaymentManager, StripeProvider, AlipayProvider, WechatPayProvider } from '@/core/payment';
+import { PaymentManager, StripeProvider, AlipayProvider, WechatPayProvider, CreemProvider } from '@/core/payment';
 import type { PaymentOrder, CheckoutSession, PaymentEvent } from '@/core/payment/types';
 import { PaymentStatus, PaymentType } from '@/core/payment/types';
 import { getUuid, getUniSeq, getSnowId } from '@/lib/hash';
@@ -37,6 +37,8 @@ async function getPaymentManager(): Promise<PaymentManager> {
   // Rebuild manager if provider configs changed
   const hash = JSON.stringify([
     c('stripe_secret_key') || c('stripe_api_key'),
+    c('creem_enabled'),
+    c('creem_api_key'),
     c('alipay_app_id'),
     c('wechat_mch_id'),
     c('default_payment_provider'),
@@ -56,6 +58,18 @@ async function getPaymentManager(): Promise<PaymentManager> {
         signingSecret: c('stripe_webhook_secret') || c('stripe_signing_secret') || undefined,
         allowPromotionCodes: true,
         allowedPaymentMethods: ['card', 'wechat_pay', 'alipay'],
+      }),
+      isDefault
+    );
+  }
+
+  if (c('creem_enabled') === 'true' && c('creem_api_key')) {
+    const isDefault = c('default_payment_provider') === 'creem';
+    manager.addProvider(
+      new CreemProvider({
+        apiKey: c('creem_api_key'),
+        signingSecret: c('creem_signing_secret') || undefined,
+        environment: c('creem_environment') === 'production' ? 'production' : 'sandbox',
       }),
       isDefault
     );
