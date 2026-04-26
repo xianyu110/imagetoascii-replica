@@ -71,16 +71,16 @@ function formatAmount(amount: number, currency: string) {
 }
 
 function statusVariant(
-  status: string,
+  status?: string | null,
 ): "default" | "secondary" | "destructive" | "outline" {
-  const s = status.toLowerCase();
+  const s = (status || "").toLowerCase();
   if (s === "active" || s === "trialing") return "default";
   if (s === "canceled" || s === "expired") return "destructive";
   return "secondary";
 }
 
-function isCancellable(status: string) {
-  const s = status.toLowerCase();
+function isCancellable(status?: string | null) {
+  const s = (status || "").toLowerCase();
   return s === "active" || s === "trialing";
 }
 
