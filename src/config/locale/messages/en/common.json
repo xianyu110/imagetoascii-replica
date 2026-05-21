@@ -92,5 +92,9 @@
     "theme_light": "Light",
     "theme_dark": "Dark",
     "theme_system": "System"
+  },
+  "pages": {
+    "back_to_home": "Back to home",
+    "last_updated": "Last updated"
   }
 }

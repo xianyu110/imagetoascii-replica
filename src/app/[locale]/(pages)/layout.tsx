@@ -1,25 +1,28 @@
-import { Link } from "@/core/i18n/navigation";
 import { ArrowLeft } from "lucide-react";
-import { envConfigs } from "@/config";
+import { getTranslations } from "next-intl/server";
 
-export default function PagesLayout({
+import { Link } from "@/core/i18n/navigation";
+
+export default async function PagesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const t = await getTranslations("common.pages");
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-3xl px-6 py-16">
+      <div className="mx-auto max-w-3xl px-6 pt-8 md:px-8">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8"
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          {envConfigs.app_name}
+          {t("back_to_home")}
         </Link>
-        <article className="prose prose-neutral dark:prose-invert max-w-none">
-          {children}
-        </article>
+      </div>
+      <div className="mx-auto max-w-3xl px-6 pt-6 pb-12 md:px-8 md:pt-8 md:pb-16">
+        {children}
       </div>
     </div>
   );

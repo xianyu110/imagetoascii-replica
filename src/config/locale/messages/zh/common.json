@@ -92,5 +92,9 @@
     "theme_light": "浅色模式",
     "theme_dark": "深色模式",
     "theme_system": "跟随系统"
+  },
+  "pages": {
+    "back_to_home": "返回首页",
+    "last_updated": "最近更新"
   }
 }
