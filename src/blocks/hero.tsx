@@ -1,14 +1,13 @@
 import { Link } from "@/core/i18n/navigation";
-import { getTranslations } from "next-intl/server";
+import { m } from "@/paraglide/messages.js";
 import { ArrowRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { DotPattern } from "@/components/ui/dot-pattern";
 import { cn } from "@/lib/utils";
 import { envConfigs } from "@/config";
 
-export async function Hero() {
-  const t = await getTranslations("landing");
-
+export function Hero() {
+  
   return (
     <section className="relative isolate flex flex-col items-center justify-center overflow-hidden px-4 pt-24 pb-20 sm:pt-40 sm:pb-32">
       <DotPattern
@@ -22,10 +21,10 @@ export async function Hero() {
           {envConfigs.app_name}
         </p>
         <h1 className="font-serif font-normal text-5xl sm:text-6xl lg:text-7xl leading-[1.1] tracking-tight text-foreground">
-          {t("hero.headline")}
+          {m["landing.hero.headline"]()}
         </h1>
         <p className="text-lg text-muted-foreground sm:text-xl max-w-2xl mx-auto leading-relaxed">
-          {t("hero.subheadline")}
+          {m["landing.hero.subheadline"]()}
         </p>
 
         <div className="flex items-center justify-center gap-3 pt-4">
@@ -36,7 +35,7 @@ export async function Hero() {
               "gap-2 rounded-full px-8 h-12"
             )}
           >
-            {t("hero.cta")}
+            {m["landing.hero.cta"]()}
             <ArrowRight className="size-4" />
           </Link>
         </div>

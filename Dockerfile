@@ -10,7 +10,7 @@ WORKDIR /app
 
 # Copy package manifests, build config, and ALL dialect templates so the
 # postinstall hook can stamp out a matching schema.ts during install.
-COPY package.json pnpm-lock.yaml* next.config.ts ./
+COPY package.json pnpm-lock.yaml* vite.config.ts ./
 COPY scripts/db-setup.mjs scripts/db-setup.mjs
 COPY src/config/db/schema.sqlite.ts src/config/db/schema.sqlite.ts
 COPY src/config/db/schema.postgres.ts src/config/db/schema.postgres.ts
@@ -30,28 +30,23 @@ FROM deps AS builder
 WORKDIR /app
 
 COPY . .
-ENV DOCKER=1
 RUN pnpm build
 
-# Production image, copy all the files and run next
+# Production image — run the nitro server output
 FROM base AS runner
 WORKDIR /app
 
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs && \
-    mkdir .next && \
-    chown nextjs:nodejs .next
+    adduser --system --uid 1001 appuser
 
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=appuser:nodejs /app/.output ./.output
 
-USER nextjs
+USER appuser
 
 EXPOSE 3000
 
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV HOSTNAME=0.0.0.0
+ENV HOST=0.0.0.0
 
-CMD ["node", "server.js"]
+CMD ["node", ".output/server/index.mjs"]

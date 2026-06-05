@@ -1,10 +1,12 @@
 "use client";
 
+import { m } from "@/paraglide/messages.js";
 import { useState } from "react";
 import type { ComponentType, SVGProps } from "react";
-import { useTranslations } from "next-intl";
+import { useMutation } from "@tanstack/react-query";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { apiPost } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
@@ -51,13 +53,37 @@ export function PricingTable({
   groups: PricingGroup[];
   onCheckout?: (plan: PricingPlan) => void;
 }) {
-  const t = useTranslations("common");
-  const [activeGroup, setActiveGroup] = useState(groups[0]?.key || "");
+    const [activeGroup, setActiveGroup] = useState(groups[0]?.key || "");
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const currentGroup = groups.find((g) => g.key === activeGroup) || groups[0];
 
-  async function handleCheckout(plan: PricingPlan) {
+  const checkoutMutation = useMutation({
+    mutationFn: (plan: PricingPlan) =>
+      apiPost<{ checkout_url?: string }>("/api/payment/checkout", {
+        product_id: plan.productId,
+        product_name: plan.productName || plan.name,
+        plan_name: plan.plan?.name || plan.name,
+        price: plan.priceInCents,
+        currency: plan.currency || "usd",
+        type: plan.plan ? "subscription" : "one-time",
+        description: plan.name,
+        plan: plan.plan,
+        credits: plan.credits,
+        credits_valid_days: plan.creditsValidDays,
+        payment_provider: plan.paymentProvider || "stripe",
+      }),
+    onSuccess: (data) => {
+      if (data?.checkout_url) {
+        window.location.href = data.checkout_url;
+      }
+    },
+    onSettled: () => {
+      setLoadingId(null);
+    },
+  });
+
+  function handleCheckout(plan: PricingPlan) {
     if (onCheckout) {
       onCheckout(plan);
       return;
@@ -66,33 +92,7 @@ export function PricingTable({
     if (!plan.productId || !plan.priceInCents) return;
 
     setLoadingId(plan.id);
-    try {
-      const res = await fetch("/api/payment/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id: plan.productId,
-          product_name: plan.productName || plan.name,
-          plan_name: plan.plan?.name || plan.name,
-          price: plan.priceInCents,
-          currency: plan.currency || "usd",
-          type: plan.plan ? "subscription" : "one-time",
-          description: plan.name,
-          plan: plan.plan,
-          credits: plan.credits,
-          credits_valid_days: plan.creditsValidDays,
-          payment_provider: plan.paymentProvider || "stripe",
-        }),
-      });
-      const data = await res.json();
-      if (data.code === 0 && data.data?.checkout_url) {
-        window.location.href = data.data.checkout_url;
-      }
-    } catch {
-      // error handled silently
-    } finally {
-      setLoadingId(null);
-    }
+    checkoutMutation.mutate(plan);
   }
 
   return (
@@ -179,8 +179,8 @@ export function PricingTable({
               disabled={loadingId === plan.id}
             >
               {loadingId === plan.id
-                ? t("pricing.processing")
-                : plan.buttonText || t("pricing.get_started")}
+                ? m["common.pricing.processing"]()
+                : plan.buttonText || m["common.pricing.get_started"]()}
             </Button>
 
             {/* Features */}

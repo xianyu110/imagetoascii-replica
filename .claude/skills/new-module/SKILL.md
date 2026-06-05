@@ -110,49 +110,55 @@ export async function remove(params: { userId: string; id: string }) {
 5. **Soft delete** via `deletedAt` field — don't hard-delete user data
 6. **Transactions** for multi-table operations: `await db().transaction(async (tx) => { ... })`
 
-## Step 4: Create API Route
+## Step 4: Create API Server Route
 
-Create `src/app/api/<name>/route.ts`:
+Create `src/routes/api/<name>.ts`. Handlers are named functions registered under `server.handlers`, each receiving `{ request }` (a standard `Request`):
 
 ```typescript
-import { headers } from 'next/headers';
+import { createFileRoute } from '@tanstack/react-router';
 import { respData, respOk, respErr } from '@/lib/resp';
 import { getAuth } from '@/core/auth';
 import * as service from '@/modules/<name>/service';
 
-export async function GET() {
+async function GET({ request }: { request: Request }) {
   const auth = getAuth();
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({ headers: request.headers });
   if (!session?.user) return respErr('Unauthorized');
 
   const data = await service.list(session.user.id);
   return respData(data);
 }
 
-export async function POST(req: Request) {
+async function POST({ request }: { request: Request }) {
   const auth = getAuth();
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({ headers: request.headers });
   if (!session?.user) return respErr('Unauthorized');
 
-  const body = await req.json();
+  const body = await request.json();
   // validate body...
   const result = await service.create({ userId: session.user.id, ...body });
   return respData(result);
 }
 
-export async function DELETE(req: Request) {
+async function DELETE({ request }: { request: Request }) {
   const auth = getAuth();
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({ headers: request.headers });
   if (!session?.user) return respErr('Unauthorized');
 
-  const { searchParams } = new URL(req.url);
+  const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
   if (!id) return respErr('ID is required');
 
   await service.remove({ userId: session.user.id, id });
   return respOk();
 }
+
+export const Route = createFileRoute('/api/<name>')({
+  server: { handlers: { GET, POST, DELETE } },
+});
 ```
+
+For dynamic params, use `$param.ts` (read via `params.param` in the handler context); for catch-all, use `$.ts`.
 
 ## Step 5: Verify
 
@@ -163,7 +169,7 @@ export async function DELETE(req: Request) {
 
 Tell the user:
 - Module location: `src/modules/<name>/service.ts`
-- API endpoint: `/api/<name>` (methods available)
+- API server route: `src/routes/api/<name>.ts` → `/api/<name>` (methods available)
 - Schema: which table(s) used or if new table needed
 - Next steps: "Run `/new-page <description>` to add a dashboard view with i18n"
 

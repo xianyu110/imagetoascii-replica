@@ -1,7 +1,7 @@
 "use client";
 
+import { m } from "@/paraglide/messages.js";
 import { Link } from "@/core/i18n/navigation";
-import { useTranslations } from "next-intl";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
@@ -23,8 +23,7 @@ export function SiteHeader({
 }: {
   navLinks?: NavLink[];
 }) {
-  const t = useTranslations("common");
-  const [mobileOpen, setMobileOpen] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
   const { data: session } = useSession();
   const user = session?.user;
 
@@ -66,7 +65,7 @@ export function SiteHeader({
               href="/settings"
               className={cn(buttonVariants(), "gap-1.5")}
             >
-              {t("nav.get_started")}
+              {m["common.nav.get_started"]()}
               <ArrowRight className="size-4" />
             </Link>
           )}
@@ -114,7 +113,7 @@ export function SiteHeader({
                 className={cn(buttonVariants(), "gap-1.5")}
                 onClick={() => setMobileOpen(false)}
               >
-                {t("nav.get_started")}
+                {m["common.nav.get_started"]()}
               </Link>
             )}
           </div>

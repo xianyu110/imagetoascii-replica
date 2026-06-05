@@ -1,7 +1,6 @@
-"use client";
-
-import { useLocale, useTranslations } from "next-intl";
-import { usePathname, useRouter } from "@/core/i18n/navigation";
+import { useRouter } from "@/core/i18n/navigation";
+import { m } from "@/paraglide/messages.js";
+import { getLocale, locales, localizeHref, setLocale } from "@/paraglide/runtime.js";
 import { useTheme } from "next-themes";
 import {
   LogOutIcon,
@@ -15,7 +14,7 @@ import {
   UserIcon,
 } from "lucide-react";
 import { signOut } from "@/core/auth/client";
-import { localeNames, locales } from "@/config/locale";
+import { localeNames } from "@/config/locale";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -47,10 +46,8 @@ export function UserMenu({
   image?: string | null;
   profileHref?: string;
 }) {
-  const t = useTranslations("common");
-  const router = useRouter();
-  const pathname = usePathname();
-  const locale = useLocale();
+    const router = useRouter();
+  const locale = getLocale();
   const { theme, setTheme } = useTheme();
   const { isMobile } = useSidebar();
 
@@ -60,7 +57,8 @@ export function UserMenu({
   }
 
   function handleLocaleSwitch(newLocale: string) {
-    router.replace(pathname, { locale: newLocale });
+    // Writes the locale cookie and reloads on the localized URL.
+    setLocale(newLocale as typeof locale);
   }
 
   return (
@@ -108,11 +106,11 @@ export function UserMenu({
             {profileHref && (
               <DropdownMenuItem
                 onClick={() => {
-                  window.open(`/${locale}${profileHref}`, "_blank");
+                  window.open(localizeHref(profileHref), "_blank");
                 }}
               >
                 <UserIcon className="size-4" />
-                {t("nav.profile")}
+                {m["common.nav.profile"]()}
               </DropdownMenuItem>
             )}
             <DropdownMenuSub>
@@ -137,26 +135,26 @@ export function UserMenu({
                 <PaletteIcon className="size-4" />
                 <span className="flex-1">
                   {theme === "dark"
-                    ? t("nav.theme_dark")
+                    ? m["common.nav.theme_dark"]()
                     : theme === "light"
-                    ? t("nav.theme_light")
-                    : t("nav.theme_system")}
+                    ? m["common.nav.theme_light"]()
+                    : m["common.nav.theme_system"]()}
                 </span>
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 <DropdownMenuItem onClick={() => setTheme("light")}>
                   <SunIcon className="size-4" />
-                  <span className="flex-1">{t("nav.theme_light")}</span>
+                  <span className="flex-1">{m["common.nav.theme_light"]()}</span>
                   {theme === "light" && <CheckIcon className="size-3.5" />}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme("dark")}>
                   <MoonIcon className="size-4" />
-                  <span className="flex-1">{t("nav.theme_dark")}</span>
+                  <span className="flex-1">{m["common.nav.theme_dark"]()}</span>
                   {theme === "dark" && <CheckIcon className="size-3.5" />}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme("system")}>
                   <MonitorIcon className="size-4" />
-                  <span className="flex-1">{t("nav.theme_system")}</span>
+                  <span className="flex-1">{m["common.nav.theme_system"]()}</span>
                   {theme === "system" && <CheckIcon className="size-3.5" />}
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
@@ -164,7 +162,7 @@ export function UserMenu({
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
               <LogOutIcon className="size-4" />
-              {t("sign.sign_out_title")}
+              {m["common.sign.sign_out_title"]()}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

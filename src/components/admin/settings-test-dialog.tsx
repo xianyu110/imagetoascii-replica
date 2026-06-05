@@ -1,7 +1,9 @@
 "use client";
 
+import { m } from "@/paraglide/messages.js";
 import { useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useMutation } from "@tanstack/react-query";
+import { apiPost } from "@/lib/api-client";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,10 +27,20 @@ interface Props {
 }
 
 export function SettingsTestDialog({ open, onOpenChange, group, spec, groupTitle }: Props) {
-  const t = useTranslations("admin");
-  const [inputs, setInputs] = useState<Record<string, string>>({});
-  const [running, setRunning] = useState(false);
+    const [inputs, setInputs] = useState<Record<string, string>>({});
   const [result, setResult] = useState<TestResult | null>(null);
+
+  const testMutation = useMutation({
+    mutationFn: () =>
+      apiPost<TestResult>("/api/admin/settings/test", { group, inputs }),
+    onSuccess: (data) => {
+      setResult(data);
+    },
+    onError: (err: any) => {
+      setResult({ success: false, message: err?.message || m["admin.settings.test.error"]() });
+    },
+  });
+  const running = testMutation.isPending;
 
   // Reset form + result each time the dialog opens for a new group
   useEffect(() => {
@@ -39,7 +51,8 @@ export function SettingsTestDialog({ open, onOpenChange, group, spec, groupTitle
     }
     setInputs(initial);
     setResult(null);
-    setRunning(false);
+    testMutation.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, group, spec]);
 
   const canRun = useMemo(
@@ -47,34 +60,17 @@ export function SettingsTestDialog({ open, onOpenChange, group, spec, groupTitle
     [spec.fields, inputs],
   );
 
-  async function handleRun() {
-    setRunning(true);
+  function handleRun() {
     setResult(null);
-    try {
-      const res = await fetch("/api/admin/settings/test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ group, inputs }),
-      });
-      const data = await res.json();
-      if (data.code !== 0) {
-        setResult({ success: false, message: data.message || t("settings.test.error") });
-      } else {
-        setResult(data.data as TestResult);
-      }
-    } catch (err: any) {
-      setResult({ success: false, message: err?.message || t("settings.test.error") });
-    } finally {
-      setRunning(false);
-    }
+    testMutation.mutate();
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{t("settings.test.title", { group: groupTitle })}</DialogTitle>
-          <DialogDescription>{t("settings.test.description")}</DialogDescription>
+          <DialogTitle>{m["admin.settings.test.title"]({ group: groupTitle })}</DialogTitle>
+          <DialogDescription>{m["admin.settings.test.description"]()}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
@@ -92,11 +88,11 @@ export function SettingsTestDialog({ open, onOpenChange, group, spec, groupTitle
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={running}>
-            {t("settings.test.close")}
+            {m["admin.settings.test.close"]()}
           </Button>
           <Button onClick={handleRun} disabled={running || !canRun}>
             {running && <Loader2 className="size-4 animate-spin" />}
-            {running ? t("settings.test.running") : t("settings.test.run")}
+            {running ? m["admin.settings.test.running"]() : m["admin.settings.test.run"]()}
           </Button>
         </DialogFooter>
       </DialogContent>

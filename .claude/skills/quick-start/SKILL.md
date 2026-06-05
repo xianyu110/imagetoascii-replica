@@ -59,11 +59,11 @@ If the user doesn't specify, default to **SQLite** and move on — don't block o
 
 ### 0.2 Configure environment
 
-If `.env.development` doesn't exist yet, copy the template first: `cp .env.example .env.development`. Then set the values in `.env.development` (the canonical local-dev env file — loaded by both `next dev` and the `db:*` scripts, ahead of `.env.local`/`.env`):
+If `.env.development` doesn't exist yet, copy the template first: `cp .env.example .env.development`. Then set the values in `.env.development` (the canonical local-dev env file — loaded by both `vite dev` and the `db:*` scripts, ahead of `.env.local`/`.env`). Public, client-visible vars use the `VITE_` prefix:
 ```env
-NEXT_PUBLIC_APP_URL=<domain or http://localhost:3000>
-NEXT_PUBLIC_APP_NAME=<App Name>
-NEXT_PUBLIC_APP_DESCRIPTION=<description>
+VITE_APP_URL=<domain or http://localhost:3000>
+VITE_APP_NAME=<App Name>
+VITE_APP_DESCRIPTION=<description>
 DATABASE_PROVIDER=<sqlite|postgres|mysql>
 DATABASE_URL=<connection string>
 ```
@@ -101,8 +101,8 @@ Ask the user for their admin email and password. If they don't provide one, just
 
 ### 0.5 Update translations
 
-Update `src/config/locale/messages/en/common.json` and `zh/common.json`:
-- Set `metadata.title` and `metadata.description` to the app name and description.
+Translations are flat, dot-keyed JSON in `messages/en.json` and `messages/zh.json` (one file per locale). Update **both**:
+- Set `common.metadata.title` and `common.metadata.description` to the app name and description.
 
 Decide which modules to keep based on user's features. Default: keep all. Only remove if the user explicitly doesn't need something.
 
@@ -145,14 +145,14 @@ Then continue to Phase 3 (Dashboard Pages) and beyond.
    - Consumer SaaS → clean white with vibrant accent
    - Creative tools → bold, colorful
    - Enterprise → conservative, trust-building
-3. Update `globals.css` color tokens accordingly
+3. Update `src/styles/globals.css` color tokens accordingly
 4. Verify: `pnpm build`
 
 ---
 
 ## Phase 3: Page Construction
 
-### 3.1 Landing Page (`src/app/[locale]/page.tsx`)
+### 3.1 Landing Page (`src/routes/index.tsx`)
 
 **Mode A & B:** Already handled by `/clone-website` in Phase 1. Skip to 3.2.
 
@@ -168,7 +168,7 @@ Workflow:
    - `components/pricing-table.tsx` → `PricingTable` (takes `groups`)
    - `components/ui/*` — shadcn primitives (Button, Card, Accordion, etc.)
 
-2. **Rewrite the blocks** — each block reads i18n and passes content to a primitive. Keep this file-per-section pattern:
+2. **Rewrite the blocks** — each block reads i18n (`m['landing....']()` from `@/paraglide/messages.js`) and passes content to a primitive. Keep this file-per-section pattern:
    - `blocks/header.tsx` — wraps `SiteHeader`
    - `blocks/hero.tsx` — large heading, subtext, 1-2 CTAs, optional hero image
    - `blocks/features.tsx` — 3-6 feature cards (user's brief)
@@ -178,7 +178,7 @@ Workflow:
    - `blocks/cta.tsx` — final CTA section
    - `blocks/footer.tsx` — wraps `SiteFooter`. **Keep `SiteFooter` from `components/site-footer.tsx`** — it already mounts the `BuiltWithShipAny` badge (links to `https://shipany.ai/?utm_source=<app_hostname>` (hostname only, e.g. `yourdomain.com`)) in the bottom bar. If you replace `SiteFooter` with a custom footer, you MUST still render `<BuiltWithShipAny />` from `@/components/built-with-shipany` somewhere in it. Never strip the attribution.
 
-3. **Rewrite `page.tsx`** — pure composition, ~15 lines. Example:
+3. **Rewrite `index.tsx`** — pure composition, ~15 lines (the route's `component`). Example:
    ```tsx
    <Header />
    <Hero />
@@ -190,7 +190,7 @@ Workflow:
    <Footer />
    ```
 
-4. **Rewrite `config/locale/messages/{en,zh}/landing.json`** — the block translations.
+4. **Rewrite the `landing.*` keys in `messages/en.json` and `messages/zh.json`** — the block translations (flat dot-keyed, e.g. `"landing.hero.headline"`).
 
 5. **Generate visuals via `/generate-image`** — a landing page made of plain text and shadcn cards looks generic. For each block that benefits from imagery, generate one image and reference it from the block:
 
@@ -207,32 +207,32 @@ Make it visually polished — use gradients, subtle shadows, proper spacing, ani
 
 ### 3.2 Auth Pages
 
-Auth pages (`src/app/[locale]/(auth)/sign-in/page.tsx` and `sign-up/page.tsx`) are already built with:
-- shadcn login-03 block styling (Card + Field components)
-- i18n translations from `common.sign.*`
+Auth pages (`src/routes/(auth)/sign-in.tsx` and `sign-up.tsx`) are already built with:
+- shadcn login-03 block styling (Card + Field components), TanStack Form + zod validation
+- i18n via `m['common.sign.*']()`
 - Social login buttons (Google/GitHub) that auto-show based on admin config
 - No changes needed unless the user wants a custom design.
 
 ### 3.3 Dashboard Pages
 
-Dashboard pages are client-side rendered, using `AppLayout` from `@/components/app-layout`.
+Dashboard pages do client-side data fetching with TanStack Query + `@/lib/api-client`, using `AppLayout` from `@/components/app-layout`.
 
 Based on the user's features, create dashboard pages:
 
-1. **Dashboard home** (`src/app/[locale]/dashboard/page.tsx`) — already has stats cards (credits, API keys, plan, usage). Customize for the product.
+1. **Dashboard home** (`src/routes/settings/index.tsx`) — already has stats cards (credits, API keys, plan, usage). Customize for the product.
 
 2. **Core product page(s)** — the main feature the user described:
-   - `src/app/[locale]/dashboard/<feature>/page.tsx` — use `"use client"`, fetch data from `/api/<feature>`
+   - `src/routes/settings/<feature>.tsx` — a route whose component fetches data from `/api/<feature>` via `useQuery(apiGet(...))`
    - Wire up to existing modules or create new ones with `/new-module` pattern
 
-3. **Update nav items** in `src/app/[locale]/dashboard/layout.tsx` — add entries to the `navItems` array
+3. **Update nav items** in the layout `src/routes/settings/route.tsx` — add entries to the nav array
 
 ### 3.4 Legal Pages
 
-Generate legal pages as MDX in the `(pages)` route group:
-- Privacy Policy already exists at `src/app/[locale]/(pages)/privacy-policy/page.mdx` — update content for the product
-- Terms of Service at `src/app/[locale]/(pages)/terms-of-service/page.mdx` — update content
-- Add more if needed (e.g., refund policy) using `/new-static-page` pattern
+Legal pages are MDX content files in `src/content/pages/`, rendered by per-slug route files in `(pages)/` (shared `-static-page.tsx` factory):
+- Privacy Policy already exists at `src/content/pages/privacy-policy.{en,zh}.mdx` — update content for the product
+- Terms of Service at `src/content/pages/terms-of-service.{en,zh}.mdx` — update content
+- Add more if needed (e.g., refund policy) using `/new-static-page` pattern — add the MDX file plus a thin route file `src/routes/(pages)/<slug>.tsx` via `staticPageRouteOptions`
 
 ### 3.5 Module Wiring
 
@@ -244,8 +244,8 @@ Connect landing page elements to modules:
 | "Sign Up" CTA | → `/sign-up` (auth, locale-aware Link) |
 | Pricing toggle (monthly/annual) | Client-side state, pass to checkout |
 | Feature usage stats on dashboard | → `/api/credits` for balance |
-| User settings | Already wired (`/dashboard/settings`) |
-| API key management | Already wired (`/dashboard/api-keys`) |
+| User settings | Already wired (`/settings/profile`) |
+| API key management | Already wired (`/settings/apikeys`) |
 | Admin panel | Already wired (`/admin`) |
 | Privacy/Terms footer links | Already wired (`/privacy-policy`, `/terms-of-service`) |
 
@@ -283,16 +283,16 @@ Report:
 
 1. **Mode A/B delegates to `/clone-website`.** Don't try to extract CSS or assets yourself — the clone-website skill has a full pipeline for that. quick-start handles project config (Phase 0), then calls clone-website, then wires up dashboard/modules.
 2. **Real content, not placeholders.** Extract actual text and images. Only use placeholders if the user explicitly provides no content.
-3. **Foundation before components.** Fonts and colors in globals.css FIRST, then build sections.
+3. **Foundation before components.** Fonts and colors in `src/styles/globals.css` FIRST, then build sections.
 4. **Don't skip interaction extraction.** Scroll before clicking. Identify the interaction model before building.
 5. **Every state must be captured.** If there are 4 tabs, extract content for all 4.
 6. **Use the module system.** Business logic goes in `src/modules/`, not in page components.
 7. **Use `envConfigs.app_name`** — never hardcode the app name.
-8. **Imports:** `respData`/`respErr` from `@/lib/resp`. `Link`/`useRouter` from `@/core/i18n/navigation`. `getUuid` from `@/lib/hash`.
-9. **Dashboard pages are "use client"** — fetch data from API routes, use `useTranslations` for i18n.
+8. **Imports:** `respData`/`respErr` from `@/lib/resp`. `apiGet`/`apiPost` from `@/lib/api-client`. `Link`/`useRouter` from `@/core/i18n/navigation`. `m` from `@/paraglide/messages.js`. `getUuid` from `@/lib/hash`.
+9. **Dashboard pages fetch via TanStack Query + `@/lib/api-client`** — no raw `fetch`, don't import server-only modules (`@/modules/*`, `@/core/db`) in components; use `m['...']()` from `@/paraglide/messages.js` for i18n.
 10. **`pnpm build` must pass** at every checkpoint.
 11. **shadcn/ui v4 (Base Nova)** — no `asChild` prop. Use `className={cn(buttonVariants())}` on Link.
-12. **i18n** — all user-facing text should use translation keys. Update `src/config/locale/messages/{en,zh}/` and register new paths in `src/config/locale/index.ts`.
-13. **Legal pages** — use MDX in `src/app/[locale]/(pages)/`. Layout is shared.
+12. **i18n** — all user-facing text uses `m['ns.key']()` from `@/paraglide/messages.js`. Add each new key to **both** `messages/en.json` and `messages/zh.json` (flat dot-keyed; no per-namespace files, no path registration).
+13. **Legal pages** — MDX content in `src/content/pages/`, rendered by per-slug route files in `(pages)/` via the `-static-page.tsx` factory. Layout is shared.
 14. **Static pages** — use `/new-static-page` skill for additional content pages.
 15. **For complex landing pages** (Mode A/B with 8+ sections), use worktree agents to build sections in parallel.

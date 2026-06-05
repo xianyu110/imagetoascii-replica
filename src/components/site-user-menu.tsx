@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { m } from "@/paraglide/messages.js";
 import { SettingsIcon, LogOutIcon, ShieldIcon } from "lucide-react";
 import { Link, useRouter } from "@/core/i18n/navigation";
 import { signOut } from "@/core/auth/client";
+import { useUserPermissions } from "@/hooks/use-user-permissions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -25,18 +25,9 @@ export function SiteUserMenu({
   email: string;
   image?: string | null;
 }) {
-  const t = useTranslations("common");
-  const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/user/permissions")
-      .then((r) => r.json())
-      .then((res) => {
-        if (res.code === 0) setIsAdmin(res.data?.isAdmin === true);
-      })
-      .catch(() => {});
-  }, []);
+    const router = useRouter();
+  const { data } = useUserPermissions();
+  const isAdmin = data?.isAdmin === true;
 
   async function handleSignOut() {
     await signOut();
@@ -73,18 +64,18 @@ export function SiteUserMenu({
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<Link href="/settings" />}>
           <SettingsIcon className="size-4" />
-          {t("nav.settings")}
+          {m["common.nav.settings"]()}
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem render={<Link href="/admin" />}>
             <ShieldIcon className="size-4" />
-            {t("systems.admin")}
+            {m["common.systems.admin"]()}
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOutIcon className="size-4" />
-          {t("sign.sign_out_title")}
+          {m["common.sign.sign_out_title"]()}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

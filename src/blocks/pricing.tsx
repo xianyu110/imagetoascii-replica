@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { m } from "@/paraglide/messages.js";
+import { useMemo, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
 import {
   Folder,
   Folders,
@@ -18,6 +19,8 @@ import {
 
 import { useRouter } from "@/core/i18n/navigation";
 import { useSession } from "@/core/auth/client";
+import { apiPost } from "@/lib/api-client";
+import { usePublicConfig } from "@/hooks/use-public-config";
 import {
   PricingTable,
   type PricingGroup,
@@ -37,23 +40,14 @@ const ALL_PROVIDERS: PaymentProvider[] = [
 ];
 
 export function Pricing({ title }: { title?: string } = {}) {
-  const t = useTranslations("landing");
-  const router = useRouter();
+    const router = useRouter();
   const { data: session } = useSession();
 
-  const [configs, setConfigs] = useState<Record<string, string>>({});
+  const { data: configsData } = usePublicConfig();
+  const configs = configsData ?? {};
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingPlan, setPendingPlan] = useState<PricingPlan | null>(null);
   const [loadingProvider, setLoadingProvider] = useState<PaymentProvider | null>(null);
-
-  useEffect(() => {
-    fetch("/api/config/public")
-      .then((r) => r.json())
-      .then((res) => {
-        if (res.code === 0) setConfigs(res.data || {});
-      })
-      .catch(() => {});
-  }, []);
 
   const enabledProviders = useMemo<PaymentProvider[]>(
     () => ALL_PROVIDERS.filter((p) => configs[`${p}_enabled`] === "true"),
@@ -61,32 +55,32 @@ export function Pricing({ title }: { title?: string } = {}) {
   );
 
   const starterFeatures = [
-    { icon: Folder, label: t("pricing.feature_1_project") },
-    { icon: Sparkles, label: t("pricing.feature_5k_credits") },
-    { icon: Mail, label: t("pricing.feature_email_support") },
+    { icon: Folder, label: m["landing.pricing.feature_1_project"]() },
+    { icon: Sparkles, label: m["landing.pricing.feature_5k_credits"]() },
+    { icon: Mail, label: m["landing.pricing.feature_email_support"]() },
   ];
   const proFeatures = [
-    { icon: Folders, label: t("pricing.feature_unlimited_projects") },
-    { icon: Sparkles, label: t("pricing.feature_50k_credits") },
-    { icon: Zap, label: t("pricing.feature_priority_support") },
-    { icon: Terminal, label: t("pricing.feature_api_access") },
+    { icon: Folders, label: m["landing.pricing.feature_unlimited_projects"]() },
+    { icon: Sparkles, label: m["landing.pricing.feature_50k_credits"]() },
+    { icon: Zap, label: m["landing.pricing.feature_priority_support"]() },
+    { icon: Terminal, label: m["landing.pricing.feature_api_access"]() },
   ];
   const enterpriseFeatures = [
-    { icon: Check, label: t("pricing.feature_everything_pro") },
-    { icon: InfinityIcon, label: t("pricing.feature_unlimited_credits") },
-    { icon: Headphones, label: t("pricing.feature_dedicated_support") },
-    { icon: Puzzle, label: t("pricing.feature_custom_integrations") },
+    { icon: Check, label: m["landing.pricing.feature_everything_pro"]() },
+    { icon: InfinityIcon, label: m["landing.pricing.feature_unlimited_credits"]() },
+    { icon: Headphones, label: m["landing.pricing.feature_dedicated_support"]() },
+    { icon: Puzzle, label: m["landing.pricing.feature_custom_integrations"]() },
   ];
 
   const groups: PricingGroup[] = [
     {
       key: "monthly",
-      label: t("pricing.monthly"),
+      label: m["landing.pricing.monthly"](),
       plans: [
         {
           id: "starter-monthly",
-          name: t("pricing.starter"),
-          description: t("pricing.starter_desc"),
+          name: m["landing.pricing.starter"](),
+          description: m["landing.pricing.starter_desc"](),
           price: "$9",
           interval: "mo",
           features: starterFeatures,
@@ -98,12 +92,12 @@ export function Pricing({ title }: { title?: string } = {}) {
         },
         {
           id: "pro-monthly",
-          name: t("pricing.pro"),
-          description: t("pricing.pro_desc"),
+          name: m["landing.pricing.pro"](),
+          description: m["landing.pricing.pro_desc"](),
           price: "$29",
           interval: "mo",
           featured: true,
-          badge: t("pricing.popular"),
+          badge: m["landing.pricing.popular"](),
           features: proFeatures,
           productId: "pro_monthly",
           priceInCents: 2900,
@@ -113,8 +107,8 @@ export function Pricing({ title }: { title?: string } = {}) {
         },
         {
           id: "enterprise-monthly",
-          name: t("pricing.enterprise"),
-          description: t("pricing.enterprise_desc"),
+          name: m["landing.pricing.enterprise"](),
+          description: m["landing.pricing.enterprise_desc"](),
           price: "$99",
           interval: "mo",
           features: enterpriseFeatures,
@@ -128,12 +122,12 @@ export function Pricing({ title }: { title?: string } = {}) {
     },
     {
       key: "yearly",
-      label: t("pricing.yearly"),
+      label: m["landing.pricing.yearly"](),
       plans: [
         {
           id: "starter-yearly",
-          name: t("pricing.starter"),
-          description: t("pricing.starter_desc"),
+          name: m["landing.pricing.starter"](),
+          description: m["landing.pricing.starter_desc"](),
           price: "$86",
           originalPrice: "$108",
           interval: "yr",
@@ -146,13 +140,13 @@ export function Pricing({ title }: { title?: string } = {}) {
         },
         {
           id: "pro-yearly",
-          name: t("pricing.pro"),
-          description: t("pricing.pro_desc"),
+          name: m["landing.pricing.pro"](),
+          description: m["landing.pricing.pro_desc"](),
           price: "$278",
           originalPrice: "$348",
           interval: "yr",
           featured: true,
-          badge: t("pricing.popular"),
+          badge: m["landing.pricing.popular"](),
           features: proFeatures,
           productId: "pro_yearly",
           priceInCents: 27800,
@@ -162,8 +156,8 @@ export function Pricing({ title }: { title?: string } = {}) {
         },
         {
           id: "enterprise-yearly",
-          name: t("pricing.enterprise"),
-          description: t("pricing.enterprise_desc"),
+          name: m["landing.pricing.enterprise"](),
+          description: m["landing.pricing.enterprise_desc"](),
           price: "$950",
           originalPrice: "$1,188",
           interval: "yr",
@@ -178,79 +172,88 @@ export function Pricing({ title }: { title?: string } = {}) {
     },
     {
       key: "lifetime",
-      label: t("pricing.lifetime"),
+      label: m["landing.pricing.lifetime"](),
       plans: [
         {
           id: "starter-lifetime",
-          name: t("pricing.starter"),
-          description: t("pricing.starter_desc"),
+          name: m["landing.pricing.starter"](),
+          description: m["landing.pricing.starter_desc"](),
           price: "$149",
           features: starterFeatures,
           productId: "starter_lifetime",
           priceInCents: 14900,
           currency: "usd",
           credits: 100000,
-          buttonText: t("pricing.buy_lifetime"),
+          buttonText: m["landing.pricing.buy_lifetime"](),
         },
         {
           id: "pro-lifetime",
-          name: t("pricing.pro"),
-          description: t("pricing.pro_desc"),
+          name: m["landing.pricing.pro"](),
+          description: m["landing.pricing.pro_desc"](),
           price: "$499",
           features: proFeatures,
           featured: true,
-          badge: t("pricing.best_value"),
+          badge: m["landing.pricing.best_value"](),
           productId: "pro_lifetime",
           priceInCents: 49900,
           currency: "usd",
           credits: 1000000,
-          buttonText: t("pricing.buy_lifetime"),
+          buttonText: m["landing.pricing.buy_lifetime"](),
         },
         {
           id: "enterprise-lifetime",
-          name: t("pricing.enterprise"),
-          description: t("pricing.enterprise_desc"),
+          name: m["landing.pricing.enterprise"](),
+          description: m["landing.pricing.enterprise_desc"](),
           price: "$1,999",
           features: enterpriseFeatures,
           productId: "enterprise_lifetime",
           priceInCents: 199900,
           currency: "usd",
           credits: 10000000,
-          buttonText: t("pricing.buy_lifetime"),
+          buttonText: m["landing.pricing.buy_lifetime"](),
         },
       ],
     },
   ];
 
-  async function startCheckout(plan: PricingPlan, provider: PaymentProvider) {
-    setLoadingProvider(provider);
-    try {
-      const res = await fetch("/api/payment/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id: plan.productId,
-          product_name: plan.productName || plan.name,
-          plan_name: plan.plan?.name || plan.name,
-          price: plan.priceInCents,
-          currency: plan.currency || "usd",
-          type: plan.plan ? "subscription" : "one-time",
-          description: plan.name,
-          plan: plan.plan,
-          credits: plan.credits,
-          credits_valid_days: plan.creditsValidDays,
-          payment_provider: provider,
-        }),
-      });
-      const data = await res.json();
-      if (data.code !== 0 || !data.data?.checkout_url) {
-        throw new Error(data.message || "Checkout failed");
+  const checkoutMutation = useMutation({
+    mutationFn: ({
+      plan,
+      provider,
+    }: {
+      plan: PricingPlan;
+      provider: PaymentProvider;
+    }) =>
+      apiPost<{ checkout_url?: string }>("/api/payment/checkout", {
+        product_id: plan.productId,
+        product_name: plan.productName || plan.name,
+        plan_name: plan.plan?.name || plan.name,
+        price: plan.priceInCents,
+        currency: plan.currency || "usd",
+        type: plan.plan ? "subscription" : "one-time",
+        description: plan.name,
+        plan: plan.plan,
+        credits: plan.credits,
+        credits_valid_days: plan.creditsValidDays,
+        payment_provider: provider,
+      }),
+    onSuccess: (data) => {
+      if (!data?.checkout_url) {
+        toast.error("Checkout failed");
+        setLoadingProvider(null);
+        return;
       }
-      window.location.href = data.data.checkout_url;
-    } catch (err: any) {
+      window.location.href = data.checkout_url;
+    },
+    onError: (err: any) => {
       toast.error(err?.message || "Checkout failed");
       setLoadingProvider(null);
-    }
+    },
+  });
+
+  function startCheckout(plan: PricingPlan, provider: PaymentProvider) {
+    setLoadingProvider(provider);
+    checkoutMutation.mutate({ plan, provider });
   }
 
   async function handleCheckout(plan: PricingPlan) {
@@ -286,10 +289,10 @@ export function Pricing({ title }: { title?: string } = {}) {
       <div className="mx-auto max-w-5xl">
         <div className="text-center mb-20">
           <h2 className="font-serif font-normal text-4xl sm:text-5xl tracking-tight">
-            {title ?? t("pricing.title")}
+            {title ?? m["landing.pricing.title"]()}
           </h2>
           <p className="mt-5 text-muted-foreground">
-            {t("pricing.description")}
+            {m["landing.pricing.description"]()}
           </p>
         </div>
         <PricingTable groups={groups} onCheckout={handleCheckout} />

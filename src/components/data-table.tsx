@@ -1,8 +1,12 @@
-"use client";
-
-import { useState } from "react";
-import { useTranslations } from "next-intl";
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  type ColumnDef,
+} from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight, RefreshCw, Search } from "lucide-react";
+import { useMemo, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
 
 export interface Column<T> {
   header: string;
@@ -35,6 +40,7 @@ interface DataTableProps<T> {
   emptyText?: string;
   rowKey: (row: T) => string;
   onRefresh?: () => void | Promise<unknown>;
+  loading?: boolean;
 }
 
 export function DataTable<T>({
@@ -51,11 +57,33 @@ export function DataTable<T>({
   emptyText,
   rowKey,
   onRefresh,
+  loading,
 }: DataTableProps<T>) {
-  const t = useTranslations("common");
   const [refreshing, setRefreshing] = useState(false);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  // Adapt the simple Column<T> shape to react-table column defs. Server-side
+  // pagination stays fully controlled by the page/total props.
+  const tableColumns = useMemo<ColumnDef<T>[]>(
+    () =>
+      columns.map((col, i) => ({
+        id: String(i),
+        header: () => col.header,
+        cell: ({ row }) => col.cell(row.original),
+        meta: { className: col.className },
+      })),
+    [columns]
+  );
+
+  const table = useReactTable({
+    data,
+    columns: tableColumns,
+    getCoreRowModel: getCoreRowModel(),
+    manualPagination: true,
+    rowCount: total,
+    getRowId: (row) => rowKey(row),
+  });
 
   async function handleRefresh() {
     if (!onRefresh || refreshing) return;
@@ -68,6 +96,7 @@ export function DataTable<T>({
   }
 
   const showHeader = onSearchChange || toolbar || onRefresh;
+  const busy = refreshing || loading;
 
   return (
     <div className="space-y-4">
@@ -79,7 +108,7 @@ export function DataTable<T>({
               <Input
                 value={search || ""}
                 onChange={(e) => onSearchChange(e.target.value)}
-                placeholder={searchPlaceholder || t("search.placeholder")}
+                placeholder={searchPlaceholder || m["common.search.placeholder"]()}
                 className="pl-8 h-9"
               />
             </div>
@@ -91,12 +120,10 @@ export function DataTable<T>({
               size="icon"
               className="ml-auto size-9"
               onClick={handleRefresh}
-              disabled={refreshing}
-              aria-label={t("table.refresh")}
+              disabled={busy}
+              aria-label={m["common.table.refresh"]()}
             >
-              <RefreshCw
-                className={cn("size-4", refreshing && "animate-spin")}
-              />
+              <RefreshCw className={cn("size-4", busy && "animate-spin")} />
             </Button>
           )}
         </div>
@@ -105,30 +132,47 @@ export function DataTable<T>({
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow>
-              {columns.map((col, i) => (
-                <TableHead key={i} className={col.className}>
-                  {col.header}
-                </TableHead>
-              ))}
-            </TableRow>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className={
+                      (header.column.columnDef.meta as { className?: string })
+                        ?.className
+                    }
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
           </TableHeader>
           <TableBody>
-            {data.length === 0 ? (
+            {table.getRowModel().rows.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
                   className="text-center text-muted-foreground py-8"
                 >
-                  {emptyText || t("table.no_data")}
+                  {emptyText || m["common.table.no_data"]()}
                 </TableCell>
               </TableRow>
             ) : (
-              data.map((row) => (
-                <TableRow key={rowKey(row)}>
-                  {columns.map((col, i) => (
-                    <TableCell key={i} className={col.className}>
-                      {col.cell(row)}
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className={
+                        (cell.column.columnDef.meta as { className?: string })
+                          ?.className
+                      }
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -140,7 +184,7 @@ export function DataTable<T>({
 
       <div className="flex items-center justify-between px-2">
         <p className="text-sm text-muted-foreground">
-          {t("table.total", { count: total })}
+          {m["common.table.total"]({ count: total })}
         </p>
         {total > pageSize && (
           <div className="flex items-center gap-2">
@@ -151,7 +195,7 @@ export function DataTable<T>({
               disabled={page <= 1}
             >
               <ChevronLeft className="size-4" />
-              {t("table.previous")}
+              {m["common.table.previous"]()}
             </Button>
             <Button
               variant="outline"
@@ -159,7 +203,7 @@ export function DataTable<T>({
               onClick={() => onPageChange(page + 1)}
               disabled={page >= totalPages}
             >
-              {t("table.next")}
+              {m["common.table.next"]()}
               <ChevronRight className="size-4" />
             </Button>
           </div>

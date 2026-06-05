@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { m } from "@/paraglide/messages.js";
 import { CreditCard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,19 +45,18 @@ export function PaymentProviderModal({
   planName,
   price,
 }: Props) {
-  const t = useTranslations("common");
-
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t("pricing.choose_payment")}</DialogTitle>
+          <DialogTitle>{m["common.pricing.choose_payment"]()}</DialogTitle>
           <DialogDescription>
             {planName
               ? price
-                ? t("pricing.payment_for", { plan: planName, price })
-                : t("pricing.payment_for_plan", { plan: planName })
-              : t("pricing.choose_payment_desc")}
+                ? m["common.pricing.payment_for"]({ plan: planName, price })
+                : m["common.pricing.payment_for_plan"]({ plan: planName })
+              : m["common.pricing.choose_payment_desc"]()}
           </DialogDescription>
         </DialogHeader>
 

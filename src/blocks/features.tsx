@@ -1,4 +1,5 @@
-import { getTranslations } from "next-intl/server";
+import { m } from "@/paraglide/messages.js";
+import { tDynamic } from "@/core/i18n/dynamic";
 import {
   ShieldCheck,
   CreditCard,
@@ -9,9 +10,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-export async function Features() {
-  const t = await getTranslations("landing");
-
+export function Features() {
+  
   const features: { key: string; icon: LucideIcon }[] = [
     { key: "auth", icon: ShieldCheck },
     { key: "payment", icon: CreditCard },
@@ -26,10 +26,10 @@ export async function Features() {
       <div className="mx-auto max-w-5xl">
         <div className="text-center mb-20">
           <h2 className="font-serif font-normal text-4xl sm:text-5xl tracking-tight">
-            {t("features.title")}
+            {m["landing.features.title"]()}
           </h2>
           <p className="mt-5 text-muted-foreground max-w-lg mx-auto">
-            {t("features.description")}
+            {m["landing.features.description"]()}
           </p>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -42,9 +42,9 @@ export async function Features() {
                 <Icon className="size-5" strokeWidth={1.75} />
               </div>
               <div className="space-y-2">
-                <h3 className="font-medium">{t(`features.${key}.title`)}</h3>
+                <h3 className="font-medium">{tDynamic(`landing.features.${key}.title`)}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {t(`features.${key}.description`)}
+                  {tDynamic(`landing.features.${key}.description`)}
                 </p>
               </div>
             </div>

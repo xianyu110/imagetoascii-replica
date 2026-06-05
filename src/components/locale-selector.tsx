@@ -1,8 +1,5 @@
-"use client";
-
-import { useLocale } from "next-intl";
-import { usePathname, useRouter } from "@/core/i18n/navigation";
-import { localeNames, locales } from "@/config/locale";
+import { localeNames } from "@/config/locale";
+import { getLocale, locales, setLocale } from "@/paraglide/runtime.js";
 import { Languages, Check, Globe, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
@@ -19,12 +16,11 @@ export function LocaleSelector({
   variant?: "icon" | "pill";
   className?: string;
 }) {
-  const locale = useLocale();
-  const router = useRouter();
-  const pathname = usePathname();
+  const locale = getLocale();
 
   function handleSwitch(newLocale: string) {
-    router.replace(pathname, { locale: newLocale });
+    // Writes the locale cookie and reloads on the localized URL.
+    setLocale(newLocale as typeof locale);
   }
 
   return (

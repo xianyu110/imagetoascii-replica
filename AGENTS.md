@@ -4,16 +4,21 @@ This is a **headless SaaS engine** — pre-wired business logic (payments, credi
 
 ## Tech Stack
 
-- **Framework:** Next.js 15 (App Router, React 19, TypeScript strict)
+- **Framework:** TanStack Start (RC, Vite 8 + nitro, React 19, TypeScript strict). File-based routing under `src/routes/`. No React Server Components, no `"use client"` directives — all components are regular React; loaders and server functions handle server-side work.
 - **UI:** shadcn/ui v4 (Base Nova style, Tailwind CSS 4, oklch colors)
+- **Data fetching:** TanStack Query (react-query) v5 over a typed `@/lib/api-client` — no raw `fetch` in components.
+- **Forms:** TanStack Form v1 + zod v4 validation, via the `TextField` helper in `@/components/form-field`.
+- **Tables:** `@/components/data-table` (backed by `@tanstack/react-table`, manual pagination).
+- **i18n:** Paraglide JS (`@inlang/paraglide-js` 2.x) — compiled message functions, flat dot-keyed JSON.
 - **Auth:** better-auth with Drizzle adapter
 - **Database:** Drizzle ORM — supports PostgreSQL, MySQL, SQLite, Turso, Cloudflare D1
 - **All code is self-contained** — no external packages for business logic. Payment, email, storage, AI, auth, and utils are inlined in `src/core/` and `src/lib/`.
 
 ## Commands
 
-- `pnpm dev` — Dev server
-- `pnpm build` — Production build (always verify after changes)
+- `pnpm dev` — Vite dev server (port 3000)
+- `pnpm build` — Vite production build (always verify after changes)
+- `pnpm start` — Run the production server (`node .output/server/index.mjs`)
 - `pnpm db:setup` — Copy schema template based on `DATABASE_PROVIDER` (run once after clone)
 - `pnpm db:push` — Push schema to database (development — direct sync, may lose data)
 - `pnpm db:generate` — Generate SQL migration files (production — safe, reviewable)
@@ -30,10 +35,11 @@ pnpm db:push              # create tables
 pnpm dev                  # start dev server
 ```
 
-**Env files:** copy `.env.example` → `.env.development` for local dev (gitignored). The loader
-(`scripts/with-env.ts`) and `next dev` both resolve `.env.{NODE_ENV}` before `.env.local`/`.env`,
-so `.env.development` is the canonical local file. `.env.example` is the committed template — keep
-it in sync when adding a new env var to `src/config/index.ts`.
+**Env files:** copy `.env.example` → `.env.development` for local dev (gitignored). The `db:*`
+loader (`scripts/with-env.ts`) and Vite (`loadEnvFiles()` called from `vite.config.ts`) both
+resolve `.env.{NODE_ENV}` before `.env.local`/`.env`, so `.env.development` is the canonical local
+file and server-side `process.env` is populated from it. `.env.example` is the committed template —
+keep it in sync when adding a new env var to `src/config/index.ts`.
 
 ### Schema change workflow
 
@@ -56,7 +62,7 @@ src/
 ├── core/                        # Infrastructure — every project uses this
 │   ├── db/                      # Multi-DB (PostgreSQL, MySQL, SQLite, D1)
 │   ├── auth/                    # better-auth (server + client) + RBAC
-│   ├── i18n/                    # next-intl (routing, navigation, request)
+│   ├── i18n/                    # navigation.tsx (locale-aware Link/router) + dynamic.ts (tDynamic)
 │   ├── payment/                 # Payment providers (Stripe, PayPal, Creem)
 │   ├── email/                   # Email providers (Resend)
 │   ├── storage/                 # Storage providers (S3, R2)
@@ -74,26 +80,45 @@ src/
 ├── config/
 │   ├── index.ts                 # All env vars (app, db, auth, stripe, resend, storage, ai, locale)
 │   ├── db/schema.ts             # All table definitions (19 built-in + custom tables)
-│   └── locale/                  # i18n locale config + translation JSON files
-│       ├── index.ts             # Locales, default locale, message paths
-│       └── messages/{en,zh}/    # Translation files per locale
+│   └── locale/index.ts          # localeNames map for the language-switcher UI (locales live in project.inlang)
 │
-├── app/
-│   ├── layout.tsx               # Root layout (fonts, html lang)
-│   ├── [locale]/                # Locale-aware pages
-│   │   ├── layout.tsx           # NextIntlClientProvider + ThemeProvider
-│   │   ├── page.tsx             # Homepage
-│   │   ├── (auth)/              # Sign-in, sign-up
-│   │   └── dashboard/           # Dashboard pages
-│   └── api/                     # REST endpoints (NOT under [locale])
+├── messages/{en,zh}.json        # Translation source — flat dot-keyed (e.g. "landing.hero.headline")
+├── project.inlang/settings.json # Inlang project config (locales, baseLocale, plugins)
+├── paraglide/  (src/paraglide/) # Generated message fns + runtime — gitignored, rebuilt by the vite plugin
 │
+├── server.ts                    # Nitro entry — wraps the handler in paraglideMiddleware (locale via AsyncLocalStorage)
+├── router.tsx                   # getRouter — creates the router instance + rewrite (deLocalizeUrl/localizeUrl)
+├── routeTree.gen.ts             # Generated route tree (do not edit by hand)
+├── routes/                      # File-based routes (pages + API) — locale-free paths; URL prefix handled by rewrite
+│   ├── __root.tsx               # HTML shell: QueryClientProvider, fonts, ThemeProvider, Toaster, Analytics, hreflang, notFound
+│   ├── index.tsx                # Homepage
+│   ├── pricing.tsx              # e.g. createFileRoute('/pricing') — no locale segment
+│   ├── (auth)/                  # Sign-in, sign-up (route group)
+│   ├── (pages)/                 # MDX static pages: <slug>.tsx routes + -static-page.tsx factory
+│   ├── settings/                # User dashboard pages (route.tsx = layout + nav)
+│   ├── admin/                   # Admin panel pages (route.tsx = layout + nav)
+│   └── api/                     # Server routes — REST endpoints
+│
+├── content/pages/               # MDX content for static pages (<slug>.{en,zh}.mdx)
+├── hooks/                       # Shared react-query hooks (use-public-config, use-user-permissions, use-mobile)
 ├── blocks/                      # Zero-config page sections: read i18n, wire data into components
 │                                # e.g. hero, features, pricing-section, header, footer
 ├── components/                  # Reusable UI: all content via props, no i18n reads
 │   │                            # e.g. site-header, site-footer, pricing, app-sidebar
+│   ├── data-table.tsx           # Paginated table (TanStack Table, manual pagination, `loading` prop)
+│   ├── form-field.tsx           # TextField — TanStack Form field wired to a labeled Input
+│   ├── mdx-components.tsx        # MDX element styling (mdxComponents for MDXProvider)
 │   └── ui/                      # shadcn/ui primitives (add via `npx shadcn add`)
-└── lib/                         # Utilities (hash, resp, cookie, cache, rate-limit, time, env, cn)
+├── styles/globals.css           # Theme tokens (oklch CSS variables)
+└── lib/                         # Utilities (api-client, query-client, hash, resp, cookie, cache, rate-limit, time, env, cn)
 ```
+
+Key entry files:
+- `vite.config.ts` — plugins: mdx → tailwindcss → **paraglideVitePlugin** (outdir `./src/paraglide`, `strategy: ['url','cookie','baseLocale']`, `urlPatterns` for the `/zh` prefix) → tanstackStart → viteReact → nitro. Calls `loadEnvFiles()` so server-side `process.env` is populated from `.env.{NODE_ENV}`.
+- `src/server.ts` — Nitro fetch entry; wraps the request in `paraglideMiddleware` so `getLocale()` resolves server-side.
+- `src/router.tsx` — exports `getRouter`; its `rewrite` runs Paraglide `deLocalizeUrl`/`localizeUrl` so routes stay locale-free while URLs gain the `/zh` prefix.
+- `src/routes/__root.tsx` — HTML shell (`QueryClientProvider` + `ReactQueryDevtools` in dev, fonts via `@fontsource` + a Google Fonts `<link>` for Noto Serif SC, `ThemeProvider`/`Toaster`/`GoogleOneTap`/`Analytics`, hreflang `<link>`s, `notFoundComponent`).
+- `src/routeTree.gen.ts` — generated; never edit by hand.
 
 ## Module System
 
@@ -105,10 +130,10 @@ Every module in `src/modules/` is a **standalone service file** that:
 ### How modules connect to routes
 
 ```
-User Request → API Route (src/app/api/*) → Module Service (src/modules/*) → Database
+User Request → API Route (src/routes/api/*) → Module Service (src/modules/*) → Database
 ```
 
-API routes are thin wrappers — they check auth, parse params, call the service, return JSON.
+API routes are thin server-route wrappers — they check auth, parse params, call the service, return JSON.
 
 ### Module dependency rules
 
@@ -121,67 +146,175 @@ API routes are thin wrappers — they check auth, parse params, call the service
 
 ### i18n (translations)
 
-**Server components:**
-```tsx
-import { getTranslations } from 'next-intl/server';
+i18n is powered by **Paraglide JS** (`@inlang/paraglide-js`). Messages are compiled into tree-shakeable functions — there is no provider, no `useTranslations` hook, no `useLocale`.
 
-export default async function Page() {
-  const t = await getTranslations('common');
-  return <h1>{t('sign.sign_in_title')}</h1>;
+**Message source:** flat dot-keyed JSON in `messages/en.json` and `messages/zh.json` (~675 keys). The key prefix is the old namespace, e.g. `"landing.hero.headline"`, `"common.nav.profile"`, `"admin.users.credits_granted"`. The Inlang project config lives at `project.inlang/settings.json`. The compiler output `src/paraglide/` is **gitignored** and regenerated by the vite plugin on each build/dev.
+
+**Components (any component — they're all regular React):**
+```tsx
+import { m } from '@/paraglide/messages.js';
+
+export function MyButton() {
+  return <button>{m['landing.nav.get_started']()}</button>;
 }
 ```
 
-**Client components:**
-```tsx
-"use client";
-import { useTranslations, useLocale } from 'next-intl';
+- With params: `m['common.table.total']({ count })`
+- Explicit locale (e.g. in a loader): `m['landing.pricing.title']({}, { locale })`
+- Runtime-built keys (tab labels, keyed lists): `tDynamic(key)` from `@/core/i18n/dynamic`. Prefer static `m['ns.key']()` whenever the key is known — dynamic access opts the bundle out of tree-shaking.
 
-export function MyForm() {
-  const t = useTranslations('common');
-  const locale = useLocale();
-  return <button>{t('nav.get_started')}</button>;
+**Adding a translation:** add the key to **both** `messages/en.json` and `messages/zh.json`, then call `m['the.key']()`. No per-namespace folders, no `localeMessagesPaths` registration — `src/config/locale/index.ts` now only exports `localeNames` for the switcher UI.
+
+**Locale runtime:** `import { getLocale, setLocale, localizeHref, localizeUrl, locales, baseLocale } from '@/paraglide/runtime.js'`. `getLocale()` works in components and in loaders (server-side via the `paraglideMiddleware` AsyncLocalStorage, client-side after hydration).
+
+**Switching locale:** call `setLocale('zh')` — it writes the `PARAGLIDE_LOCALE` cookie and triggers a full reload. See `src/components/locale-selector.tsx` / `user-menu.tsx`.
+
+**Locale-aware links:** Use `Link` from `@/core/i18n/navigation` instead of a raw anchor for pages. Internal hrefs stay **locale-free** (`href="/pricing"`); the router rewrite localizes the output URL (en = no prefix, zh = `/zh`). `useRouter`/`usePathname` come from the same module.
+
+### Pages & route metadata
+
+Pages are file routes living directly under `src/routes/**` — **there is no `{-$locale}` segment**. URL locale prefixes are handled entirely by the router `rewrite` (`src/router.tsx`) + `paraglideVitePlugin` `urlPatterns` (`vite.config.ts`) + `paraglideMiddleware` (`src/server.ts`). So `createFileRoute` paths have no locale segment:
+
+```tsx
+import { createFileRoute } from '@tanstack/react-router';
+import { m } from '@/paraglide/messages.js';
+
+function PricingPage() {
+  return <h1>{m['landing.pricing.title']()}</h1>;
 }
+
+export const Route = createFileRoute('/pricing')({
+  component: PricingPage,
+});
 ```
 
-**Adding translations:** Add JSON files in `src/config/locale/messages/{en,zh}/`, then register the path in `localeMessagesPaths` in `src/config/locale/index.ts`.
+Layouts are `route.tsx` files in a folder that render `<Outlet />`. Route groups `(auth)`, `(pages)` work like Next. Colocated non-route files use a `-` prefix (e.g. `-settings-form.tsx`).
 
-**Locale-aware links:** Use `Link` from `@/core/i18n/navigation` instead of `next/link` for pages — it auto-prefixes the locale.
+Metadata replaces `generateMetadata` — declare it on the route's `head`. When a title/description needs the active locale, resolve it in the `loader` with `getLocale()` and pass it to the message function (see `src/routes/pricing.tsx` and `(pages)/-static-page.tsx`):
+```tsx
+export const Route = createFileRoute('/pricing')({
+  loader: () => {
+    const locale = getLocale();
+    return { title: m['landing.pricing.title']({}, { locale }) };
+  },
+  head: ({ loaderData }) => ({
+    meta: loaderData ? [{ title: loaderData.title }] : [],
+  }),
+  component: PricingPage,
+});
+```
 
-### Server components (default)
+`notFound()` and `redirect()` are imported from `@tanstack/react-router`.
+
+### Client data fetching (TanStack Query + api-client)
+
+Components never call `fetch` directly — they use **TanStack Query** over the typed `@/lib/api-client`. `QueryClientProvider` is mounted in `src/routes/__root.tsx` (`src/lib/query-client.ts`: a fresh client per SSR request, a browser singleton).
+
+`@/lib/api-client` unwraps the `respData`/`respErr` envelope (`{ code, message, data }`) and throws `ApiError` on `code !== 0`:
+- `apiGet`/`apiPost`/`apiPut`/`apiPatch`/`apiDelete`
+- `pageQuery(base, { page, pageSize, search })` — builds the list query string
+- `PageResult<T>` = `{ items: T[]; total: number }`
+
+**List query** (paginated, keeps previous page while fetching):
+```tsx
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { apiGet, pageQuery, type PageResult } from '@/lib/api-client';
+
+const listQuery = useQuery({
+  queryKey: ['admin-users', page, debouncedSearch],
+  queryFn: () =>
+    apiGet<PageResult<User>>(
+      pageQuery('/api/admin/users', { page, pageSize: 10, search: debouncedSearch })
+    ),
+  placeholderData: keepPreviousData,
+});
+// listQuery.data?.items, listQuery.data?.total, listQuery.isFetching
+```
+
+**Mutation** (invalidate + toast on success):
+```tsx
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiPost } from '@/lib/api-client';
+import { toast } from 'sonner';
+
+const queryClient = useQueryClient();
+const mutation = useMutation({
+  mutationFn: (vars: { userId: string; credits: number }) =>
+    apiPost('/api/admin/users/credits', vars),
+  onSuccess: () => {
+    toast.success(m['admin.users.credits_granted']());
+    queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+  },
+  onError: (e: Error) => toast.error(e.message),
+});
+```
+
+Shared hooks live in `src/hooks/` — `usePublicConfig()` (`use-public-config.ts`) and `useUserPermissions()` (`use-user-permissions.ts`). Pass `listQuery.isFetching` to `<DataTable loading={...} />`.
+
+### Forms (TanStack Form + zod)
+
+Forms use **TanStack Form** with zod validation and the `TextField` helper from `@/components/form-field`:
+```tsx
+import { useForm } from '@tanstack/react-form';
+import { z } from 'zod';
+import { TextField } from '@/components/form-field';
+
+const schema = z.object({ email: z.string().email(), password: z.string().min(1) });
+
+const form = useForm({
+  defaultValues: { email: '', password: '' },
+  validators: { onSubmit: schema },
+  onSubmit: async ({ value }) => { /* ... */ },
+});
+
+<form onSubmit={(e) => { e.preventDefault(); form.handleSubmit(); }}>
+  <form.Field name="email">
+    {(field) => <TextField field={field} label={m['common.sign.email_title']()} type="email" />}
+  </form.Field>
+  <form.Subscribe selector={(s) => s.isSubmitting}>
+    {(isSubmitting) => <Button type="submit" disabled={isSubmitting}>Submit</Button>}
+  </form.Subscribe>
+</form>
+```
+See `src/routes/(auth)/sign-in.tsx` and the admin dialog forms for reference.
+
+### Route loaders & server functions
+
+Server-side work happens in route `loader`s or `createServerFn` — not in components. Components never import server-only modules (`@/modules/*`, `@/core/db`); they fetch from API routes or call server functions.
 
 ```tsx
-import { headers } from "next/headers";
-import { getAuth } from "@/core/auth";
+import { getAuth } from '@/core/auth';
 
-export default async function Page() {
-  const auth = getAuth();
-  const session = await auth.api.getSession({ headers: await headers() });
-  // ...
-}
+// inside a route loader, beforeLoad, or a createServerFn handler
+const auth = getAuth();
+const session = await auth.api.getSession({ headers: request.headers });
 ```
 
-### Client components (when needed)
+Auth on the client uses `useSession` from `@/core/auth/client`.
 
-```tsx
-"use client";
-import { useSession } from "@/core/auth/client";
-```
+### API routes (server routes)
 
-### API routes
+Files live under `src/routes/api/**` and serve the same `/api/**` URLs as before:
 
 ```ts
-import { headers } from 'next/headers';
+import { createFileRoute } from '@tanstack/react-router';
 import { respData, respErr } from '@/lib/resp';
 import { getAuth } from '@/core/auth';
 
-export async function GET() {
+async function GET({ request }: { request: Request }) {
   const auth = getAuth();
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({ headers: request.headers });
   if (!session?.user) return respErr('Unauthorized');
   // call module service...
   return respData(result);
 }
+
+export const Route = createFileRoute('/api/<feature>')({
+  server: { handlers: { GET } },
+});
 ```
+
+Dynamic params: `$provider.ts` → `params.provider`. Catch-all: `$.ts`. better-auth mounts at `src/routes/api/auth/$.ts` via `auth.handler(request)`. `respData`/`respErr`/`respPage` are unchanged, from `@/lib/resp`.
 
 ### Database queries
 
@@ -196,12 +329,12 @@ const rows = await db().select().from(someTable).where(eq(someTable.userId, id))
 ### shadcn/ui v4 (Base Nova)
 
 - **No `asChild` prop.** Use `className={cn(buttonVariants())}` on Link instead.
-- Add components: `npx shadcn add button card dialog`
-- Theme colors in `src/app/globals.css` as CSS variables (oklch)
+- Add components: `npx shadcn add button card dialog` (`components.json` has `rsc: false`)
+- Theme colors in `src/styles/globals.css` as CSS variables (oklch)
 
 ### Blocks vs Components
 
-- **`src/blocks/`** — zero-config page sections. Read i18n (`getTranslations`/`useTranslations`), build the content config, and pass it to a component. Drop into pages as `<Hero />`, `<Pricing />`, `<Header />`, `<Footer />` with no props.
+- **`src/blocks/`** — zero-config page sections. Read i18n (`m['...']()` from `@/paraglide/messages.js`), build the content config, and pass it to a component. Drop into pages as `<Hero />`, `<Pricing />`, `<Header />`, `<Footer />` with no props.
 - **`src/components/`** — reusable UI. All content arrives via props; no i18n reads inside. Covers shadcn primitives (`components/ui/`), marketing shells (`SiteHeader`, `SiteFooter`), authenticated-app shells (`AppSidebar`, `AppLayout`), and pure primitives like `PricingTable`.
 - **Rule:** a file reads translations → block. A file takes all content via props → component.
 - **Pattern:** pages consume only blocks. Blocks read i18n and configure components. Components render — they don't know the app's content.
@@ -214,8 +347,8 @@ This repo ships with a default landing page (`blocks/header`, `hero`, `features`
 When starting a new project:
 1. **Keep** `src/components/*` and `src/components/ui/*` — they're the durable primitives (`PricingTable`, `SiteHeader`, `SiteFooter`, `AppSidebar`, shadcn UI). These are the chassis.
 2. **Rewrite** `src/blocks/*` — delete the demo blocks, write new ones that wire the user's real content and i18n into the primitives. Or compose fresh sections directly.
-3. **Rewrite** `src/app/[locale]/page.tsx` — it's ~17 lines of pure composition. Recompose from the new blocks.
-4. **Rewrite** `src/config/locale/messages/{en,zh}/landing.json` — the translations that feed the blocks.
+3. **Rewrite** `src/routes/index.tsx` — it's ~17 lines of pure composition. Recompose from the new blocks.
+4. **Rewrite** the `landing.*` keys in `messages/en.json` and `messages/zh.json` — the translations that feed the blocks.
 
 The `/quick-start` and `/clone-website` skills automate this workflow.
 
@@ -224,12 +357,12 @@ The split is not cosmetic — it's **what survives a rebrand**. Primitives survi
 ## Adding a New Feature
 
 1. **Need new DB tables?** Add to `src/config/db/schema.ts` (under the "Custom tables" section), run `pnpm db:push`
-2. **Create module service:** `src/modules/<feature>/service.ts` — pure business logic
-3. **Create API route:** `src/app/api/<feature>/route.ts` — thin wrapper calling the service
-4. **Create page:** `src/app/[locale]/dashboard/<feature>/page.tsx` — `"use client"`, fetch from API
-5. **Add translations:** Update `src/config/locale/messages/{en,zh}/dashboard.json`
-6. **Add nav entry:** Update `navItems` in `src/app/[locale]/dashboard/layout.tsx`
-7. **Need a static page?** Add MDX at `src/app/[locale]/(pages)/<slug>/page.mdx`
+2. **Create module service:** `src/modules/<feature>/service.ts` — pure business logic (unchanged)
+3. **Create API server route:** `src/routes/api/<feature>.ts` — `createFileRoute(...)` with `server.handlers`, calling the service (unchanged)
+4. **Create page:** `src/routes/settings/<feature>.tsx` (or `admin/<feature>.tsx`) — `useQuery` + `@/lib/api-client` to fetch from the API
+5. **Add translations:** add `settings.<feature>.*` (or `admin.<feature>.*`) keys to **both** `messages/en.json` and `messages/zh.json`
+6. **Add nav entry:** Update the nav array in the layout `src/routes/settings/route.tsx` (or `admin/route.tsx`)
+7. **Need a static page?** Add an MDX file at `src/content/pages/<slug>.{en,zh}.mdx` plus a thin route file `src/routes/(pages)/<slug>.tsx` using `staticPageRouteOptions('<slug>')` from `(pages)/-static-page.tsx`
 
 Or use skills: `/new-module`, `/new-page`, `/new-static-page`
 
@@ -251,8 +384,12 @@ All functionality is self-contained — no external packages needed.
 | `@/lib/rate-limit` | `enforceMinIntervalRateLimit` |
 | `@/lib/cache` | `cacheGet`, `cacheSet`, `cacheRemove` |
 | `@/lib/time` | `getTimestamp`, `getIsoTimestr` |
-| `@/core/i18n/config` | `routing` (locale routing config) |
+| `@/lib/api-client` | `apiGet`, `apiPost`, `apiPut`, `apiPatch`, `apiDelete`, `pageQuery`, `PageResult`, `ApiError` |
+| `@/lib/query-client` | `getQueryClient`, `makeQueryClient` |
+| `@/paraglide/messages.js` | `m` — compiled message functions (`m['ns.key']()`) |
+| `@/paraglide/runtime.js` | `getLocale`, `setLocale`, `localizeHref`, `localizeUrl`, `locales`, `baseLocale` |
 | `@/core/i18n/navigation` | `Link`, `useRouter`, `usePathname` (locale-aware) |
+| `@/core/i18n/dynamic` | `tDynamic` (runtime-built message keys) |
 
 ## Database Schema (19 tables)
 
@@ -275,30 +412,35 @@ Each template exports **strong types** for all tables (`User`, `NewUser`, `Order
 
 ## Environment Variables
 
+Public, client-visible vars use the `VITE_` prefix (read via `import.meta.env` on the client). Secrets stay on `process.env` (server-only). `src/config/index.ts` exposes both isomorphically via `envConfigs`.
+
 ```env
-# Required
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_APP_NAME=My App
+# Required (public — VITE_ prefix, client-visible)
+VITE_APP_URL=http://localhost:3000
+VITE_APP_NAME=My App
 DATABASE_PROVIDER=sqlite
 DATABASE_URL=file:data/local.db
 AUTH_SECRET=generate-with-openssl-rand-base64-32
 
-# Payment (optional — enable when ready)
+# Payment (optional — enable when ready, server-only)
 STRIPE_SECRET_KEY=
 STRIPE_PUBLISHABLE_KEY=
 STRIPE_SIGNING_SECRET=
 
-# Locale (optional)
-NEXT_PUBLIC_DEFAULT_LOCALE=en
+# Locale (optional, public)
+VITE_DEFAULT_LOCALE=en
 
-# Other optional: RESEND_API_KEY, STORAGE_*, REPLICATE_API_TOKEN
+# Other optional public: VITE_APP_DESCRIPTION, VITE_APP_LOGO
+# Other optional server-only: RESEND_API_KEY, STORAGE_*, REPLICATE_API_TOKEN
 ```
 
 ## Critical Rules
 
 1. **Don't import between modules** (except the documented payment→credits/subscriptions dependency)
-2. **Don't add `"use client"` to server components** — split into server page + client form instead
+2. **Don't import server-only modules (`@/modules/*`, `@/core/db`) from components** — use API routes, route loaders, or `createServerFn` instead
 3. **Don't edit `components/ui/*` manually** — use `npx shadcn add`
 4. **Don't hardcode app name** — use `envConfigs.app_name` from `@/config`
-5. **Always verify `pnpm build` passes** after making changes
-6. **Return `respData`/`respErr`** from API routes (not raw `NextResponse.json`)
+5. **Use `@/lib/api-client` + TanStack Query for client data fetching** — no raw `fetch` in components
+6. **Translations live in `messages/{en,zh}.json`** with flat dot keys; access via `m['ns.key']()` (add the key to both locale files)
+7. **Always verify `pnpm build` passes** after making changes
+8. **Return `respData`/`respErr`** from API routes

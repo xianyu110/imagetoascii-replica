@@ -11,10 +11,8 @@ import { VerifyEmail } from '@/core/email/templates/verify-email';
 import * as schema from '@/config/db/schema';
 
 function assertProductionAuthSecret() {
-  // Only enforce at runtime, not during `next build` static analysis where
-  // NEXT_PHASE is set to 'phase-production-build'.
+  // Only enforce at runtime in production.
   if (process.env.NODE_ENV !== 'production') return;
-  if (process.env.NEXT_PHASE === 'phase-production-build') return;
   const secret = envConfigs.auth_secret;
   if (!secret || secret === AUTH_SECRET_PLACEHOLDER) {
     throw new Error(

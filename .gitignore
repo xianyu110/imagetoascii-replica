@@ -8,9 +8,19 @@
 !.yarn/releases
 !.yarn/versions
 
-# next.js
-/.next/
-/out/
+# tanstack start / vite / nitro
+/.output/
+/.nitro/
+/.tanstack/
+/dist/
+src/routeTree.gen.ts
+src/paraglide/
+
+# cloudflare
+/.wrangler/
+
+# claude code local state
+.claude/scheduled_tasks.lock
 
 # production
 /build
@@ -40,7 +50,6 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
 
 # database
 /data/

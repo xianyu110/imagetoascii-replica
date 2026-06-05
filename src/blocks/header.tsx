@@ -1,12 +1,11 @@
-import { getTranslations } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
+import { m } from "@/paraglide/messages.js";
 
-export async function Header() {
-  const t = await getTranslations("landing");
-
+export function Header() {
+  
   const navLinks = [
-    { href: "/#features", label: t("nav.features") },
-    { href: "/pricing", label: t("nav.pricing") },
+    { href: "/#features", label: m["landing.nav.features"]() },
+    { href: "/pricing", label: m["landing.nav.pricing"]() },
   ];
 
   return <SiteHeader navLinks={navLinks} />;

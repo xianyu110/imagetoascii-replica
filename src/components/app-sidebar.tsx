@@ -2,7 +2,7 @@
 
 import { type LucideIcon } from "lucide-react";
 import { Link, usePathname } from "@/core/i18n/navigation";
-import { useLocale } from "next-intl";
+import { localizeHref } from "@/paraglide/runtime.js";
 import {
   Sidebar,
   SidebarContent,
@@ -38,7 +38,6 @@ export function AppSidebar({
   footer?: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const locale = useLocale();
 
   // Group nav items
   const groups: { label?: string; items: NavItem[] }[] = [];
@@ -118,7 +117,7 @@ export function AppSidebar({
                 <SidebarMenuItem key={item.href}>
                   {item.newTab ? (
                     <a
-                      href={`/${locale}${item.href === "/" ? "" : item.href}`}
+                      href={localizeHref(item.href)}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

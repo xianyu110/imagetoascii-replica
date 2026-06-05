@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSession } from "@/core/auth/client";
 import { useRouter } from "@/core/i18n/navigation";
+import { useUserPermissions } from "@/hooks/use-user-permissions";
 import { AppSidebar, type NavItem } from "@/components/app-sidebar";
 import { UserMenu } from "@/components/user-menu";
 import {
@@ -37,36 +38,43 @@ export function AppLayout({
 }) {
   const { data: session, isPending } = useSession();
   const router = useRouter();
-  const [authorized, setAuthorized] = useState(false);
+
+  // Only query permissions once we have a session and a permission gate.
+  const permissionsEnabled = !!session?.user && !!requirePermission;
+  const permissionsQuery = useUserPermissions(permissionsEnabled);
+  const isAdmin = permissionsQuery.data?.isAdmin === true;
+
+  // Authorization resolution mirrors the original imperative flow:
+  // - no permission gate → authorized once a session exists
+  // - permission gate → authorized only when the query resolves with isAdmin
+  const authorized = !!session?.user && (!requirePermission || isAdmin);
 
   useEffect(() => {
     if (isPending) return;
 
     if (!session?.user) {
-      setAuthorized(false);
       router.push("/sign-in");
       return;
     }
 
-    if (!requirePermission) {
-      setAuthorized(true);
-      return;
-    }
+    if (!requirePermission) return;
 
-    fetch("/api/user/permissions")
-      .then((r) => r.json())
-      .then((res) => {
-        const admin = res.code === 0 && res.data?.isAdmin === true;
-        if (admin) {
-          setAuthorized(true);
-        } else {
-          router.push(unauthorizedRedirect);
-        }
-      })
-      .catch(() => {
-        router.push(unauthorizedRedirect);
-      });
-  }, [isPending, session, router, requirePermission, unauthorizedRedirect]);
+    // Wait for the permissions query to resolve before deciding.
+    if (permissionsQuery.isPending) return;
+
+    if (permissionsQuery.isError || !isAdmin) {
+      router.push(unauthorizedRedirect);
+    }
+  }, [
+    isPending,
+    session,
+    router,
+    requirePermission,
+    unauthorizedRedirect,
+    permissionsQuery.isPending,
+    permissionsQuery.isError,
+    isAdmin,
+  ]);
 
   if (isPending || !authorized || !session?.user) {
     return (
