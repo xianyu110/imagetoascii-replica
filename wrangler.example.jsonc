@@ -1,8 +1,8 @@
 // Cloudflare Workers deploy config — TEMPLATE.
 // The /deploy-cloudflare skill copies this to wrangler.jsonc (gitignored, your
 // working copy) and fills in the real values (D1 database_id, production URL).
-// `pnpm build:cf` (NITRO_PRESET=cloudflare_module) merges wrangler.jsonc into
-// the generated .output/server/wrangler.json; deploy with `pnpm deploy:cf`.
+// `pnpm cf:build` (NITRO_PRESET=cloudflare_module) merges wrangler.jsonc into
+// the generated .output/server/wrangler.json; deploy with `pnpm cf:deploy`.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "shipany-tanstack",

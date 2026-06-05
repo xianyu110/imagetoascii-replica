@@ -7,7 +7,7 @@ user-invocable: true
 
 # Deploy to Cloudflare Workers — $ARGUMENTS
 
-You are driving a Cloudflare Workers deployment of this TanStack Start project. The build pipeline is `NITRO_PRESET=cloudflare_module vite build` (nitro merges the root `wrangler.jsonc` into the generated `.output/server/wrangler.json`, plus a `.wrangler/deploy/config.json` redirect), then `wrangler deploy`. Both are wrapped in `pnpm run deploy:cf`.
+You are driving a Cloudflare Workers deployment of this TanStack Start project. The build pipeline is `NITRO_PRESET=cloudflare_module vite build` (nitro merges the root `wrangler.jsonc` into the generated `.output/server/wrangler.json`, plus a `.wrangler/deploy/config.json` redirect), then `wrangler deploy`. Both are wrapped in `pnpm run cf:deploy`.
 
 ## Philosophy: minimal interruptions, fully idempotent
 
@@ -29,7 +29,7 @@ Every other step (D1 create, schema migrations, RBAC seed, secrets, URL fixup) i
 | 4.5 RBAC seed | `SELECT COUNT(*) FROM role` ≥ 1 on remote D1 | Skip local-sqlite dance entirely |
 | 5 Secrets | `wrangler secret list` already contains the name | Skip per-secret upload (`--rotate-secrets` forces) |
 | 5.5 Production URL | `.env.production` `VITE_APP_URL` AND `wrangler.jsonc` `vars.VITE_APP_URL` are both consistent with routes (workers.dev + no routes, OR custom domain matching a routes pattern) | Skip the prompt (`--domain=X` overrides) |
-| 6 Deploy | (always runs) | Fresh `pnpm run deploy:cf` with the latest code/env |
+| 6 Deploy | (always runs) | Fresh `pnpm run cf:deploy` with the latest code/env |
 | 7 URL fix | Both `.env.production` AND `wrangler.jsonc` vars already match the deployed URL | Skip redeploy |
 | 9 Admin | `SELECT COUNT(*) FROM user_role ur JOIN role r ON r.id=ur.role_id WHERE r.name='super_admin'` ≥ 1 | Don't prompt (explicit `--admin*` flags still run) |
 
@@ -39,7 +39,7 @@ Narrate auto-picked resource names BEFORE acting so the user can interject with 
 
 1. **Never auto-run the final deploy.** The production push is irreversible — always confirm. The Phase 7 redeploy to fix a baked URL is part of the same confirmed deploy event and needs no re-confirmation.
 2. **Never echo secret values.** Generate with `openssl`; pipe values from env files directly into `wrangler secret put` (`grep ... | cut -d= -f2- | wrangler ...`). Never `cat` an env file into the conversation.
-3. **Always run the deploy through `pnpm run deploy:cf`.** It sources `.env.production` into the shell BEFORE the build. This matters because `src/lib/env.ts` `loadEnvFiles()` resolves `.env.local > .env.{NODE_ENV} > .env` and never overwrites existing `process.env` — shell-sourced prod values win over any localhost URL lingering in `.env.local`/`.env.development`, so the right `VITE_APP_URL` gets baked into the bundle (better-auth `trustedOrigins`, payment callbacks, canonicals).
+3. **Always run the deploy through `pnpm run cf:deploy`.** It sources `.env.production` into the shell BEFORE the build. This matters because `src/lib/env.ts` `loadEnvFiles()` resolves `.env.local > .env.{NODE_ENV} > .env` and never overwrites existing `process.env` — shell-sourced prod values win over any localhost URL lingering in `.env.local`/`.env.development`, so the right `VITE_APP_URL` gets baked into the bundle (better-auth `trustedOrigins`, payment callbacks, canonicals).
 4. **Admin password handling (Phase 9.A):** the user types the password into chat once; pass it to `init-rbac.ts --admin-password=...` and never echo it back — not in narration, commits, or env files. It's stored hashed (better-auth/crypto). Remind them to rotate it after first login.
 5. **Don't hand-edit `.output/server/wrangler.json`** — it's generated. All config belongs in the root `wrangler.jsonc`, which nitro merges at build time.
 
@@ -52,11 +52,11 @@ node -v
 pnpm -v
 npx wrangler --version
 test -f wrangler.jsonc || cp wrangler.example.jsonc wrangler.jsonc   # materialize working copy (gitignored)
-grep -q '"deploy:cf"' package.json && echo deploy script OK
+grep -q '"cf:deploy"' package.json && echo deploy script OK
 git status --short
 ```
 
-`wrangler.example.jsonc` is the committed template; `wrangler.jsonc` is the gitignored working copy holding the real D1 `database_id` and production URL (same pattern as `schema.ts`). If the example or the `deploy:cf` script is missing, this clone predates the Cloudflare wiring — pull the latest template (`/sync-upstream`).
+`wrangler.example.jsonc` is the committed template; `wrangler.jsonc` is the gitignored working copy holding the real D1 `database_id` and production URL (same pattern as `schema.ts`). If the example or the `cf:deploy` script is missing, this clone predates the Cloudflare wiring — pull the latest template (`/sync-upstream`).
 
 ### 0.2 Wrangler login (Interruption #1)
 
@@ -231,10 +231,10 @@ Warn: the zone must already exist in the account, else deploy fails with "not a 
 On `yes`:
 
 ```bash
-pnpm run deploy:cf
+pnpm run cf:deploy
 ```
 
-(`deploy:cf` = source `.env.production` → `NITRO_PRESET=cloudflare_module vite build` → `wrangler deploy`. Wrangler picks up the generated config via the `.wrangler/deploy/config.json` redirect.)
+(`cf:deploy` = source `.env.production` → `NITRO_PRESET=cloudflare_module vite build` → `wrangler deploy`. Wrangler picks up the generated config via the `.wrangler/deploy/config.json` redirect.)
 
 Capture the deployed URL from wrangler's output (`https://<worker>.<subdomain>.workers.dev`).
 
@@ -242,7 +242,7 @@ Capture the deployed URL from wrangler's output (`https://<worker>.<subdomain>.w
 
 **Skip if:** `.env.production` AND `wrangler.jsonc` vars both already match the deployed URL (custom-domain users hit this immediately; incremental re-runs too).
 
-If they differ: update both files with the real URL, re-run `pnpm run deploy:cf` (same deploy event, no re-confirmation), narrate "Baked the real URL and redeployed."
+If they differ: update both files with the real URL, re-run `pnpm run cf:deploy` (same deploy event, no re-confirmation), narrate "Baked the real URL and redeployed."
 
 ## Phase 8: Verify (auto, smoke test)
 
@@ -310,7 +310,7 @@ Just the `INSERT OR IGNORE ... SELECT` + verify from above. 0 rows → user hasn
 |---|---|---|
 | `D1 binding "DB" not found` at runtime | `wrangler.jsonc` `d1_databases` placeholder id, or server entry didn't stash the env | Phase 3.3; check `src/server.ts` `ensureCloudflareEnv` |
 | 500 on every page | AUTH_SECRET unset/placeholder, or `vars.DATABASE_PROVIDER` ≠ `d1` | Phase 5.1 / 3.3 |
-| Sign-in 403 `Invalid origin` from a browser (curl works) | localhost URL baked into the bundle — `.env.local`/`.env.development` beat `.env.production` because `loadEnvFiles` doesn't overwrite existing keys and prefers `.env.local` | Deploy via `pnpm run deploy:cf` (sources `.env.production` first), ensure `wrangler.jsonc` `vars.VITE_APP_URL` is set; verify with `grep -o 'https://[^"]*' .output/server/_ssr/*.mjs \| head` |
+| Sign-in 403 `Invalid origin` from a browser (curl works) | localhost URL baked into the bundle — `.env.local`/`.env.development` beat `.env.production` because `loadEnvFiles` doesn't overwrite existing keys and prefers `.env.local` | Deploy via `pnpm run cf:deploy` (sources `.env.production` first), ensure `wrangler.jsonc` `vars.VITE_APP_URL` is set; verify with `grep -o 'https://[^"]*' .output/server/_ssr/*.mjs \| head` |
 | `wrangler d1 migrations apply` finds no migrations | `migrations_dir` missing from the `d1_databases` entry | Set `"migrations_dir": "drizzle"` |
 | Bundle > limit (3 MiB free / 10 MiB paid, gzip) | Heavy server deps | Paid plan, or dynamic-import heavy modules |
 | Image upload fails on Workers | No-storage local-disk fallback needs a filesystem | Configure R2 in admin → Settings → Storage |
