@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { respData, respErr } from '@/lib/resp';
 import { getAuth } from '@/core/auth';
 import { hasPermission } from '@/modules/rbac/service';
-import { getAllConfigs } from '@/modules/config/service';
+import { getAllConfigs, isMaskedConfigValue } from '@/modules/config/service';
 import { runTest, getTestSpec } from '@/modules/config/settings-test';
 
 async function POST({ request }: { request: Request }) {
@@ -17,6 +17,7 @@ async function POST({ request }: { request: Request }) {
     const body = await request.json();
     const group: string = body?.group;
     const inputs: Record<string, string> = body?.inputs || {};
+    const overrides: Record<string, string> = body?.configs || {};
     if (!group) return respErr('group is required');
 
     const spec = getTestSpec(group);
@@ -28,7 +29,16 @@ async function POST({ request }: { request: Request }) {
       }
     }
 
+    // Test against the values currently entered in the form (possibly unsaved),
+    // falling back to saved config. Masked secrets mean "unchanged" — skip them
+    // so the real saved value applies instead of the bullet placeholder.
     const configs = await getAllConfigs();
+    for (const [key, value] of Object.entries(overrides)) {
+      if (typeof value === 'string' && !isMaskedConfigValue(value)) {
+        configs[key] = value;
+      }
+    }
+
     const result = await runTest(group, inputs, configs);
     return respData(result);
   } catch (error: any) {

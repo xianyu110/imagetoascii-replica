@@ -24,15 +24,17 @@ interface Props {
   group: string;
   spec: TestSpec;
   groupTitle: string;
+  /** Current (possibly unsaved) form values for this group, merged over saved config server-side. */
+  configOverrides?: Record<string, string>;
 }
 
-export function SettingsTestDialog({ open, onOpenChange, group, spec, groupTitle }: Props) {
+export function SettingsTestDialog({ open, onOpenChange, group, spec, groupTitle, configOverrides }: Props) {
     const [inputs, setInputs] = useState<Record<string, string>>({});
   const [result, setResult] = useState<TestResult | null>(null);
 
   const testMutation = useMutation({
     mutationFn: () =>
-      apiPost<TestResult>("/api/admin/settings/test", { group, inputs }),
+      apiPost<TestResult>("/api/admin/settings/test", { group, inputs, configs: configOverrides ?? {} }),
     onSuccess: (data) => {
       setResult(data);
     },

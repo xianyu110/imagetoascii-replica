@@ -50,9 +50,24 @@ function SignUpPage() {
     setCallbackUrl(params.get("callbackUrl"));
   }, []);
 
+  // Only allow same-site relative paths as callbackUrl (avoid open redirects).
+  const safeCallbackUrl =
+    callbackUrl && callbackUrl.startsWith("/") && !callbackUrl.startsWith("//")
+      ? callbackUrl
+      : null;
+
   const afterLoginUrl = redirectParam
     ? `/auth-callback?redirect=${encodeURIComponent(redirectParam)}`
-    : callbackUrl || "/settings";
+    : safeCallbackUrl || "/settings";
+
+  // Carry callbackUrl/redirect across to sign-in so the destination survives the switch.
+  const switchQuery = (() => {
+    const p = new URLSearchParams();
+    if (safeCallbackUrl) p.set("callbackUrl", safeCallbackUrl);
+    if (redirectParam) p.set("redirect", redirectParam);
+    const s = p.toString();
+    return s ? `?${s}` : "";
+  })();
 
   const configQuery = usePublicConfig();
   const configs = configQuery.data ?? {};
@@ -263,7 +278,7 @@ function SignUpPage() {
                       </form.Subscribe>
                       <FieldDescription className="text-center">
                         {m["common.sign.already_have_account"]()}{" "}
-                        <Link href="/sign-in" className="underline underline-offset-4">
+                        <Link href={`/sign-in${switchQuery}`} className="underline underline-offset-4">
                           {m["common.sign.sign_in_title"]()}
                         </Link>
                       </FieldDescription>

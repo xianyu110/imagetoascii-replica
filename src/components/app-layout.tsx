@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useSession } from "@/core/auth/client";
-import { useRouter } from "@/core/i18n/navigation";
+import { useRouter, usePathname } from "@/core/i18n/navigation";
 import { useUserPermissions } from "@/hooks/use-user-permissions";
 import { AppSidebar, type NavItem } from "@/components/app-sidebar";
 import { UserMenu } from "@/components/user-menu";
@@ -38,6 +38,7 @@ export function AppLayout({
 }) {
   const { data: session, isPending } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
 
   // Only query permissions once we have a session and a permission gate.
   const permissionsEnabled = !!session?.user && !!requirePermission;
@@ -53,7 +54,11 @@ export function AppLayout({
     if (isPending) return;
 
     if (!session?.user) {
-      router.push("/sign-in");
+      // Remember where the user was headed so sign-in can send them back.
+      // pathname is already locale-free; append the live query string.
+      const search = typeof window !== "undefined" ? window.location.search : "";
+      const callbackUrl = `${pathname}${search}`;
+      router.push(`/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       return;
     }
 
@@ -69,6 +74,7 @@ export function AppLayout({
     isPending,
     session,
     router,
+    pathname,
     requirePermission,
     unauthorizedRedirect,
     permissionsQuery.isPending,

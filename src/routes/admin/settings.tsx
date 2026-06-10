@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiGet, apiPost } from "@/lib/api-client";
 import { toast } from "sonner";
-import { Save, ChevronDown, FlaskConical } from "lucide-react";
+import { Save, ChevronDown, FlaskConical, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,6 +45,7 @@ function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState("general");
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [testingGroup, setTestingGroup] = useState<string | null>(null);
+  const [customRows, setCustomRows] = useState<{ key: string; value: string }[]>([]);
 
   function toggleCollapse(name: string) {
     setCollapsed((prev) => {
@@ -68,8 +69,31 @@ function AdminSettingsPage() {
     if (loadedConfigs) setConfigs(loadedConfigs);
   }, [loadedConfigs]);
 
+  const { data: loadedCustom } = useQuery({
+    queryKey: ["admin-config-custom"],
+    queryFn: () => apiGet<{ key: string; value: string }[]>("/api/admin/config/custom"),
+  });
+
+  useEffect(() => {
+    if (loadedCustom) setCustomRows(loadedCustom);
+  }, [loadedCustom]);
+
   function handleChange(name: string, value: string) {
     setConfigs((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function addCustomRow() {
+    setCustomRows((prev) => [...prev, { key: "", value: "" }]);
+  }
+
+  function removeCustomRow(index: number) {
+    setCustomRows((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function updateCustomRow(index: number, field: "key" | "value", value: string) {
+    setCustomRows((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)),
+    );
   }
 
   const saveMutation = useMutation({
@@ -84,7 +108,28 @@ function AdminSettingsPage() {
     },
   });
 
+  const customSaveMutation = useMutation({
+    mutationFn: (rows: { key: string; value: string }[]) =>
+      apiPost("/api/admin/config/custom", { configs: rows }),
+    onSuccess: () => {
+      toast.success(m["admin.settings.save_success"]());
+      queryClient.invalidateQueries({ queryKey: ["admin-config-custom"] });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || m["admin.settings.save_error"]());
+    },
+  });
+
+  const saving = saveMutation.isPending || customSaveMutation.isPending;
+
   function handleSave() {
+    if (activeTab === "custom") {
+      const rows = customRows
+        .map((r) => ({ key: r.key.trim(), value: r.value }))
+        .filter((r) => r.key);
+      customSaveMutation.mutate(rows);
+      return;
+    }
     const tabSettings = settings.filter((s) => s.tab === activeTab);
     const toSave: Record<string, string> = {};
     for (const s of tabSettings) {
@@ -105,9 +150,9 @@ function AdminSettingsPage() {
           <h1 className="text-2xl font-bold">{m["admin.settings.title"]()}</h1>
           <p className="text-muted-foreground">{m["admin.settings.description"]()}</p>
         </div>
-        <Button onClick={handleSave} disabled={saveMutation.isPending} className="gap-2">
+        <Button onClick={handleSave} disabled={saving} className="gap-2">
           <Save className="size-4" />
-          {saveMutation.isPending ? m["admin.settings.saving"]() : m["admin.settings.save"]()}
+          {saving ? m["admin.settings.saving"]() : m["admin.settings.save"]()}
         </Button>
       </div>
 
@@ -132,6 +177,52 @@ function AdminSettingsPage() {
       {/* Groups */}
       {isLoading ? (
         <div className="text-muted-foreground">{m["admin.loading"]()}</div>
+      ) : activeTab === "custom" ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{m["admin.settings.custom.title"]()}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {m["admin.settings.custom.description"]()}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {customRows.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                {m["admin.settings.custom.empty"]()}
+              </p>
+            )}
+            {customRows.map((row, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <Input
+                  value={row.key}
+                  onChange={(e) => updateCustomRow(i, "key", e.target.value)}
+                  placeholder={m["admin.settings.custom.key_placeholder"]()}
+                  className="w-1/3 shrink-0 font-mono"
+                />
+                <textarea
+                  value={row.value}
+                  onChange={(e) => updateCustomRow(i, "value", e.target.value)}
+                  placeholder={m["admin.settings.custom.value_placeholder"]()}
+                  rows={1}
+                  className="flex h-8 min-h-8 max-h-48 flex-1 resize-y rounded-lg border border-input bg-transparent px-2.5 py-1 text-base leading-6 outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={() => removeCustomRow(i)}
+                  aria-label={m["admin.settings.custom.remove"]()}
+                >
+                  <Minus className="size-4" />
+                </Button>
+              </div>
+            ))}
+            <Button variant="outline" onClick={addCustomRow} className="gap-1.5">
+              <Plus className="size-4" />
+              {m["admin.settings.custom.add"]()}
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         tabGroups.map((group) => {
           const groupSettings = tabSettings.filter((s) => s.group === group.name);
@@ -195,6 +286,11 @@ function AdminSettingsPage() {
           group={testingGroup}
           spec={getTestSpec(testingGroup)!}
           groupTitle={tDynamic(`admin.settings.groups.${testingGroup}.title`)}
+          configOverrides={Object.fromEntries(
+            settings
+              .filter((s) => s.group === testingGroup && configs[s.name] !== undefined)
+              .map((s) => [s.name, configs[s.name]]),
+          )}
         />
       )}
     </div>
