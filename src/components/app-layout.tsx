@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@/core/auth/client";
 import { useRouter, usePathname } from "@/core/i18n/navigation";
 import { useUserPermissions } from "@/hooks/use-user-permissions";
+import { apiGet } from "@/lib/api-client";
 import { AppSidebar, type NavItem } from "@/components/app-sidebar";
 import { UserMenu } from "@/components/user-menu";
 import {
@@ -44,15 +46,31 @@ export function AppLayout({
   // the effect and overwrite callbackUrl with the sign-in path itself.
   const redirectingRef = useRef(false);
 
+  // Invite-only gate: needs the user's membership status (also covers social
+  // logins). `needsInvite` is computed server-side in /api/user/info.
+  const userInfoQuery = useQuery({
+    queryKey: ["user-info"],
+    queryFn: () => apiGet<{ needsInvite?: boolean }>("/api/user/info"),
+    staleTime: 60_000,
+    enabled: !!session?.user,
+  });
+  const needsInvite = userInfoQuery.data?.needsInvite === true;
+  const membershipResolved =
+    !session?.user || userInfoQuery.isSuccess || userInfoQuery.isError;
+
   // Only query permissions once we have a session and a permission gate.
   const permissionsEnabled = !!session?.user && !!requirePermission;
   const permissionsQuery = useUserPermissions(permissionsEnabled);
   const isAdmin = permissionsQuery.data?.isAdmin === true;
 
   // Authorization resolution mirrors the original imperative flow:
-  // - no permission gate → authorized once a session exists
+  // - no permission gate → authorized once a session exists + membership ok
   // - permission gate → authorized only when the query resolves with isAdmin
-  const authorized = !!session?.user && (!requirePermission || isAdmin);
+  const authorized =
+    !!session?.user &&
+    membershipResolved &&
+    !needsInvite &&
+    (!requirePermission || isAdmin);
 
   useEffect(() => {
     if (isPending) return;
@@ -65,6 +83,17 @@ export function AppLayout({
       const search = typeof window !== "undefined" ? window.location.search : "";
       const callbackUrl = `${pathname}${search}`;
       router.push(`/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      return;
+    }
+
+    // Invite-only gate: wait for membership status, then bounce unredeemed
+    // (incl. social) users to the redeem page. Admins are exempt server-side.
+    if (userInfoQuery.isPending) return;
+    if (needsInvite) {
+      if (!redirectingRef.current) {
+        redirectingRef.current = true;
+        router.push("/redeem-invite");
+      }
       return;
     }
 
@@ -83,6 +112,8 @@ export function AppLayout({
     pathname,
     requirePermission,
     unauthorizedRedirect,
+    userInfoQuery.isPending,
+    needsInvite,
     permissionsQuery.isPending,
     permissionsQuery.isError,
     isAdmin,
