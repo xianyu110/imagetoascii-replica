@@ -1,9 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { respData, respErr } from '@/lib/resp';
+
 import { getAuth } from '@/core/auth';
-import { hasPermission } from '@/modules/rbac/service';
 import { getAllConfigs, isMaskedConfigValue } from '@/modules/config/service';
-import { runTest, getTestSpec } from '@/modules/config/settings-test';
+import { getTestSpec, runTest } from '@/modules/config/settings-test';
+import { hasPermission } from '@/modules/rbac/service';
+import { respData, respErr } from '@/lib/resp';
 
 async function POST({ request }: { request: Request }) {
   try {
@@ -11,7 +12,10 @@ async function POST({ request }: { request: Request }) {
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user) return respErr('Unauthorized');
 
-    const isAdmin = await hasPermission(session.user.id, 'admin.settings.write');
+    const isAdmin = await hasPermission(
+      session.user.id,
+      'admin.settings.write'
+    );
     if (!isAdmin) return respErr('Forbidden');
 
     const body = await request.json();

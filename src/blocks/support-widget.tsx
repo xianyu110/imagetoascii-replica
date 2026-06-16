@@ -1,7 +1,13 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
 import { LifeBuoy, X } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { useSession } from '@/core/auth/client';
+import { Link } from '@/core/i18n/navigation';
+import { apiPost } from '@/lib/api-client';
+import { cn } from '@/lib/utils';
 import { m } from '@/paraglide/messages.js';
+import { ImageUploader } from '@/components/image-uploader';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
@@ -14,11 +20,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ImageUploader } from '@/components/image-uploader';
-import { useSession } from '@/core/auth/client';
-import { Link } from '@/core/i18n/navigation';
-import { apiPost } from '@/lib/api-client';
-import { cn } from '@/lib/utils';
 
 /**
  * Floating support button (bottom-right) that opens a quick ticket form.
@@ -63,10 +64,10 @@ export function SupportWidget() {
         aria-label={m['common.support.open_label']()}
         onClick={() => setOpen(true)}
         className={cn(
-          'fixed bottom-6 right-6 z-50 size-12 rounded-full',
+          'fixed right-6 bottom-6 z-50 size-12 rounded-full',
           'bg-primary text-primary-foreground shadow-lg',
           'flex items-center justify-center',
-          'hover:scale-105 hover:shadow-xl transition-all'
+          'transition-all hover:scale-105 hover:shadow-xl'
         )}
       >
         {open ? <X className="size-5" /> : <LifeBuoy className="size-5" />}
@@ -76,12 +77,14 @@ export function SupportWidget() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{m['common.support.title']()}</DialogTitle>
-            <DialogDescription>{m['common.support.description']()}</DialogDescription>
+            <DialogDescription>
+              {m['common.support.description']()}
+            </DialogDescription>
           </DialogHeader>
 
           {!isPending && !session?.user ? (
-            <div className="py-6 flex flex-col items-center gap-4 text-center">
-              <p className="text-sm text-muted-foreground">
+            <div className="flex flex-col items-center gap-4 py-6 text-center">
+              <p className="text-muted-foreground text-sm">
                 {m['common.support.sign_in_notice']()}
               </p>
               <Link href="/sign-in" className={cn(buttonVariants())}>
@@ -92,7 +95,9 @@ export function SupportWidget() {
             <>
               <div className="space-y-4 py-2">
                 <div className="space-y-1.5">
-                  <Label htmlFor="support-title">{m['common.support.title_label']()}</Label>
+                  <Label htmlFor="support-title">
+                    {m['common.support.title_label']()}
+                  </Label>
                   <Input
                     id="support-title"
                     value={title}
@@ -102,7 +107,9 @@ export function SupportWidget() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="support-content">{m['common.support.content_label']()}</Label>
+                  <Label htmlFor="support-content">
+                    {m['common.support.content_label']()}
+                  </Label>
                   <Textarea
                     id="support-content"
                     value={content}
@@ -128,9 +135,12 @@ export function SupportWidget() {
                     }}
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   {m['common.support.track_hint_prefix']()}{' '}
-                  <Link href="/settings/tickets" className="underline hover:text-foreground">
+                  <Link
+                    href="/settings/tickets"
+                    className="hover:text-foreground underline"
+                  >
                     {m['common.support.track_hint_link']()}
                   </Link>
                 </p>
@@ -140,7 +150,9 @@ export function SupportWidget() {
                   {m['common.support.cancel']()}
                 </Button>
                 <Button onClick={submit} disabled={submitting || uploading}>
-                  {submitting ? m['common.support.submitting']() : m['common.support.submit']()}
+                  {submitting
+                    ? m['common.support.submitting']()
+                    : m['common.support.submit']()}
                 </Button>
               </DialogFooter>
             </>

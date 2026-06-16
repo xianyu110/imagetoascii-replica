@@ -1,16 +1,27 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { m } from "@/paraglide/messages.js";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
-} from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Shield, Coins, MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+} from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { Coins, MoreHorizontal, Shield } from 'lucide-react';
+import { toast } from 'sonner';
+
+import {
+  apiDelete,
+  apiGet,
+  apiPost,
+  pageQuery,
+  type PageResult,
+} from '@/lib/api-client';
+import { m } from '@/paraglide/messages.js';
+import { DataTable, type Column } from '@/components/data-table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -18,24 +29,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { DataTable, type Column } from "@/components/data-table";
-import {
-  apiDelete,
-  apiGet,
-  apiPost,
-  pageQuery,
-  type PageResult,
-} from "@/lib/api-client";
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 
 interface User {
   id: string;
@@ -63,17 +64,19 @@ const PAGE_SIZE = 10;
 function UsersPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // Role management dialog
   const [managingUser, setManagingUser] = useState<User | null>(null);
 
   // Credits dialog
   const [creditsUser, setCreditsUser] = useState<User | null>(null);
-  const [creditsAction, setCreditsAction] = useState<"grant" | "deduct">("grant");
-  const [creditsAmount, setCreditsAmount] = useState("");
-  const [creditsDesc, setCreditsDesc] = useState("");
+  const [creditsAction, setCreditsAction] = useState<'grant' | 'deduct'>(
+    'grant'
+  );
+  const [creditsAmount, setCreditsAmount] = useState('');
+  const [creditsDesc, setCreditsDesc] = useState('');
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
@@ -85,10 +88,10 @@ function UsersPage() {
   }, [debouncedSearch]);
 
   const listQuery = useQuery({
-    queryKey: ["admin-users", page, debouncedSearch],
+    queryKey: ['admin-users', page, debouncedSearch],
     queryFn: () =>
       apiGet<PageResult<User>>(
-        pageQuery("/api/admin/users", {
+        pageQuery('/api/admin/users', {
           page,
           pageSize: PAGE_SIZE,
           search: debouncedSearch,
@@ -99,23 +102,21 @@ function UsersPage() {
 
   // Role dialog queries — only active while a user is being managed.
   const allRolesQuery = useQuery({
-    queryKey: ["admin-roles-all"],
+    queryKey: ['admin-roles-all'],
     queryFn: () =>
-      apiGet<PageResult<RoleInfo>>("/api/admin/roles?page=1&pageSize=999"),
+      apiGet<PageResult<RoleInfo>>('/api/admin/roles?page=1&pageSize=999'),
     enabled: !!managingUser,
   });
 
   const userRolesQuery = useQuery({
-    queryKey: ["user-roles", managingUser?.id],
+    queryKey: ['user-roles', managingUser?.id],
     queryFn: () =>
       apiGet<UserRoleInfo[]>(`/api/admin/roles?userId=${managingUser!.id}`),
     enabled: !!managingUser,
   });
 
   const allRoles = allRolesQuery.data?.items ?? [];
-  const userRoleIds = new Set(
-    (userRolesQuery.data ?? []).map((r) => r.roleId)
-  );
+  const userRoleIds = new Set((userRolesQuery.data ?? []).map((r) => r.roleId));
 
   function openRoleDialog(u: User) {
     setManagingUser(u);
@@ -123,26 +124,26 @@ function UsersPage() {
 
   function openCreditsDialog(u: User) {
     setCreditsUser(u);
-    setCreditsAction("grant");
-    setCreditsAmount("");
-    setCreditsDesc("");
+    setCreditsAction('grant');
+    setCreditsAmount('');
+    setCreditsDesc('');
   }
 
   const creditsMutation = useMutation({
     mutationFn: (vars: {
       userId: string;
-      action: "grant" | "deduct";
+      action: 'grant' | 'deduct';
       credits: number;
       description?: string;
-    }) => apiPost<{ balance: number }>("/api/admin/users/credits", vars),
+    }) => apiPost<{ balance: number }>('/api/admin/users/credits', vars),
     onSuccess: (_data, vars) => {
       toast.success(
-        vars.action === "grant"
-          ? m["admin.users.credits_granted"]()
-          : m["admin.users.credits_deducted"]()
+        vars.action === 'grant'
+          ? m['admin.users.credits_granted']()
+          : m['admin.users.credits_deducted']()
       );
       setCreditsUser(null);
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -151,7 +152,7 @@ function UsersPage() {
     if (!creditsUser) return;
     const amount = Number(creditsAmount);
     if (!Number.isFinite(amount) || amount <= 0) {
-      toast.error(m["admin.users.credits_invalid_amount"]());
+      toast.error(m['admin.users.credits_invalid_amount']());
       return;
     }
     creditsMutation.mutate({
@@ -164,14 +165,14 @@ function UsersPage() {
 
   const assignRoleMutation = useMutation({
     mutationFn: (roleId: string) =>
-      apiPost("/api/admin/roles/assign", {
+      apiPost('/api/admin/roles/assign', {
         userId: managingUser!.id,
         roleId,
       }),
     onSuccess: () => {
-      toast.success(m["admin.users.role_assigned"]());
+      toast.success(m['admin.users.role_assigned']());
       queryClient.invalidateQueries({
-        queryKey: ["user-roles", managingUser?.id],
+        queryKey: ['user-roles', managingUser?.id],
       });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -183,16 +184,15 @@ function UsersPage() {
         `/api/admin/roles/assign?userId=${managingUser!.id}&roleId=${roleId}`
       ),
     onSuccess: () => {
-      toast.success(m["admin.users.role_removed"]());
+      toast.success(m['admin.users.role_removed']());
       queryClient.invalidateQueries({
-        queryKey: ["user-roles", managingUser?.id],
+        queryKey: ['user-roles', managingUser?.id],
       });
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const toggling =
-    assignRoleMutation.isPending || removeRoleMutation.isPending;
+  const toggling = assignRoleMutation.isPending || removeRoleMutation.isPending;
 
   function toggleRole(roleId: string) {
     if (!managingUser || toggling) return;
@@ -205,7 +205,7 @@ function UsersPage() {
 
   const columns: Column<User>[] = [
     {
-      header: m["admin.users.user_col"](),
+      header: m['admin.users.user_col'](),
       cell: (u) => (
         <div className="flex items-center gap-3">
           <Avatar className="size-8">
@@ -214,23 +214,25 @@ function UsersPage() {
               {(u.name || u.email).charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <span className="font-medium">{u.name || "—"}</span>
+          <span className="font-medium">{u.name || '—'}</span>
         </div>
       ),
     },
     {
-      header: m["admin.users.email_col"](),
+      header: m['admin.users.email_col'](),
       cell: (u) => u.email,
     },
     {
-      header: m["admin.users.credits_col"](),
-      className: "w-[120px]",
+      header: m['admin.users.credits_col'](),
+      className: 'w-[120px]',
       cell: (u) => (
-        <span className="font-medium tabular-nums">{u.credits.toLocaleString()}</span>
+        <span className="font-medium tabular-nums">
+          {u.credits.toLocaleString()}
+        </span>
       ),
     },
     {
-      header: m["admin.users.joined_col"](),
+      header: m['admin.users.joined_col'](),
       cell: (u) => (
         <span className="text-muted-foreground">
           {new Date(u.createdAt).toLocaleDateString()}
@@ -238,8 +240,8 @@ function UsersPage() {
       ),
     },
     {
-      header: m["admin.users.actions_col"](),
-      className: "w-[80px]",
+      header: m['admin.users.actions_col'](),
+      className: 'w-[80px]',
       cell: (u) => (
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -252,11 +254,11 @@ function UsersPage() {
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => openCreditsDialog(u)}>
               <Coins className="size-4" />
-              {m["admin.users.manage_credits_title"]()}
+              {m['admin.users.manage_credits_title']()}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => openRoleDialog(u)}>
               <Shield className="size-4" />
-              {m["admin.users.manage_roles_title"]()}
+              {m['admin.users.manage_roles_title']()}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -265,10 +267,12 @@ function UsersPage() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-bold">{m["admin.users.title"]()}</h1>
-        <p className="text-muted-foreground">{m["admin.users.description"]()}</p>
+        <h1 className="text-2xl font-bold">{m['admin.users.title']()}</h1>
+        <p className="text-muted-foreground">
+          {m['admin.users.description']()}
+        </p>
       </div>
 
       <Card>
@@ -281,7 +285,7 @@ function UsersPage() {
             pageSize={PAGE_SIZE}
             onPageChange={setPage}
             rowKey={(u) => u.id}
-            emptyText={m["admin.users.no_users"]()}
+            emptyText={m['admin.users.no_users']()}
             search={search}
             onSearchChange={setSearch}
             onRefresh={() => listQuery.refetch()}
@@ -291,15 +295,23 @@ function UsersPage() {
       </Card>
 
       {/* Role Management Dialog */}
-      <Dialog open={!!managingUser} onOpenChange={(v) => !v && setManagingUser(null)}>
+      <Dialog
+        open={!!managingUser}
+        onOpenChange={(v) => !v && setManagingUser(null)}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{m["admin.users.manage_roles_title"]()}</DialogTitle>
-            <DialogDescription>{m["admin.users.manage_roles_description"]()}</DialogDescription>
+            <DialogTitle>{m['admin.users.manage_roles_title']()}</DialogTitle>
+            <DialogDescription>
+              {m['admin.users.manage_roles_description']()}
+            </DialogDescription>
           </DialogHeader>
-          <div className="max-h-64 overflow-y-auto space-y-3 py-4">
+          <div className="max-h-64 space-y-3 overflow-y-auto py-4">
             {allRoles.map((r) => (
-              <label key={r.id} className="flex items-center gap-3 cursor-pointer">
+              <label
+                key={r.id}
+                className="flex cursor-pointer items-center gap-3"
+              >
                 <Checkbox
                   checked={userRoleIds.has(r.id)}
                   onCheckedChange={() => toggleRole(r.id)}
@@ -307,32 +319,41 @@ function UsersPage() {
                 />
                 <div>
                   <div className="text-sm font-medium">{r.title}</div>
-                  <div className="text-xs text-muted-foreground font-mono">{r.name}</div>
+                  <div className="text-muted-foreground font-mono text-xs">
+                    {r.name}
+                  </div>
                 </div>
               </label>
             ))}
             {allRoles.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">{m["admin.roles.no_roles"]()}</p>
+              <p className="text-muted-foreground py-4 text-center text-sm">
+                {m['admin.roles.no_roles']()}
+              </p>
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setManagingUser(null)}>{m["admin.roles.cancel"]()}</Button>
+            <Button variant="outline" onClick={() => setManagingUser(null)}>
+              {m['admin.roles.cancel']()}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Credits Management Dialog */}
-      <Dialog open={!!creditsUser} onOpenChange={(v) => !v && setCreditsUser(null)}>
+      <Dialog
+        open={!!creditsUser}
+        onOpenChange={(v) => !v && setCreditsUser(null)}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{m["admin.users.manage_credits_title"]()}</DialogTitle>
+            <DialogTitle>{m['admin.users.manage_credits_title']()}</DialogTitle>
             <DialogDescription>
               {creditsUser
-                ? m["admin.users.manage_credits_for"]({
+                ? m['admin.users.manage_credits_for']({
                     name: creditsUser.name || creditsUser.email,
                     balance: creditsUser.credits.toLocaleString(),
                   })
-                : ""}
+                : ''}
             </DialogDescription>
           </DialogHeader>
 
@@ -340,30 +361,32 @@ function UsersPage() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setCreditsAction("grant")}
+                onClick={() => setCreditsAction('grant')}
                 className={`rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
-                  creditsAction === "grant"
-                    ? "border-foreground bg-foreground text-background"
-                    : "border-border hover:bg-muted"
+                  creditsAction === 'grant'
+                    ? 'border-foreground bg-foreground text-background'
+                    : 'border-border hover:bg-muted'
                 }`}
               >
-                {m["admin.users.credits_action_grant"]()}
+                {m['admin.users.credits_action_grant']()}
               </button>
               <button
                 type="button"
-                onClick={() => setCreditsAction("deduct")}
+                onClick={() => setCreditsAction('deduct')}
                 className={`rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
-                  creditsAction === "deduct"
-                    ? "border-foreground bg-foreground text-background"
-                    : "border-border hover:bg-muted"
+                  creditsAction === 'deduct'
+                    ? 'border-foreground bg-foreground text-background'
+                    : 'border-border hover:bg-muted'
                 }`}
               >
-                {m["admin.users.credits_action_deduct"]()}
+                {m['admin.users.credits_action_deduct']()}
               </button>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">{m["admin.users.credits_amount_label"]()}</label>
+              <label className="text-sm font-medium">
+                {m['admin.users.credits_amount_label']()}
+              </label>
               <Input
                 type="number"
                 min="1"
@@ -374,23 +397,28 @@ function UsersPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">{m["admin.users.credits_desc_label"]()}</label>
+              <label className="text-sm font-medium">
+                {m['admin.users.credits_desc_label']()}
+              </label>
               <Input
                 value={creditsDesc}
                 onChange={(e) => setCreditsDesc(e.target.value)}
-                placeholder={m["admin.users.credits_desc_placeholder"]()}
+                placeholder={m['admin.users.credits_desc_placeholder']()}
               />
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreditsUser(null)}>
-              {m["admin.roles.cancel"]()}
+              {m['admin.roles.cancel']()}
             </Button>
-            <Button onClick={submitCredits} disabled={creditsMutation.isPending}>
+            <Button
+              onClick={submitCredits}
+              disabled={creditsMutation.isPending}
+            >
               {creditsMutation.isPending
-                ? m["admin.users.credits_submitting"]()
-                : m["admin.users.credits_submit"]()}
+                ? m['admin.users.credits_submitting']()
+                : m['admin.users.credits_submit']()}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,4 @@
-import { StorageManager, R2Provider } from '@/core/storage';
+import { R2Provider, StorageManager } from '@/core/storage';
 import { getAllConfigs, type ConfigMap } from '@/modules/config/service';
 
 /**
@@ -8,7 +8,7 @@ import { getAllConfigs, type ConfigMap } from '@/modules/config/service';
  */
 function isConfigured(configs: ConfigMap): boolean {
   return Boolean(
-    configs.r2_access_key && configs.r2_secret_key && configs.r2_bucket_name,
+    configs.r2_access_key && configs.r2_secret_key && configs.r2_bucket_name
   );
 }
 
@@ -25,7 +25,7 @@ function buildManager(configs: ConfigMap): StorageManager {
       endpoint: configs.r2_endpoint, // optional custom endpoint
       publicDomain: configs.r2_domain,
     }),
-    true,
+    true
   );
   return manager;
 }

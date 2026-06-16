@@ -1,8 +1,10 @@
 import { eq } from 'drizzle-orm';
+
 import { db } from '@/core/db';
-import { config } from '@/config/db/schema';
 import { envConfigs } from '@/config';
-import { encryptSecret, decryptSecret, isEncryptedSecret } from '@/lib/crypto';
+import { config } from '@/config/db/schema';
+import { decryptSecret, encryptSecret, isEncryptedSecret } from '@/lib/crypto';
+
 import { getSettings } from './settings';
 
 export type ConfigMap = Record<string, string>;
@@ -125,9 +127,15 @@ export function isMaskedConfigValue(value: string): boolean {
 export async function saveConfigs(configs: ConfigMap) {
   const entries = await Promise.all(
     Object.entries(configs)
-      .filter(([name, value]) => !PROTECTED_CONFIG_KEYS.has(name) && !isMaskedConfigValue(value))
-      .map(async ([name, value]): Promise<[string, string]> =>
-        isSecretConfigKey(name) ? [name, await encryptSecret(value)] : [name, value]
+      .filter(
+        ([name, value]) =>
+          !PROTECTED_CONFIG_KEYS.has(name) && !isMaskedConfigValue(value)
+      )
+      .map(
+        async ([name, value]): Promise<[string, string]> =>
+          isSecretConfigKey(name)
+            ? [name, await encryptSecret(value)]
+            : [name, value]
       )
   );
   if (entries.length === 0) {
@@ -173,7 +181,8 @@ export async function getAdminConfigs(): Promise<ConfigMap> {
   const result: ConfigMap = {};
   for (const [name, value] of Object.entries(configs)) {
     if (PROTECTED_CONFIG_KEYS.has(name)) continue;
-    result[name] = isSecretConfigKey(name) && value ? maskConfigValue(value) : value;
+    result[name] =
+      isSecretConfigKey(name) && value ? maskConfigValue(value) : value;
   }
   return result;
 }
@@ -219,7 +228,9 @@ export async function getCustomConfigs(): Promise<CustomConfig[]> {
  * delete any previously-stored custom key that's no longer present. Reserved
  * keys are rejected so the custom tab can't shadow a predefined setting.
  */
-export async function replaceCustomConfigs(pairs: CustomConfig[]): Promise<void> {
+export async function replaceCustomConfigs(
+  pairs: CustomConfig[]
+): Promise<void> {
   const reserved = reservedConfigKeys();
   const seen = new Set<string>();
   const clean: Array<[string, string]> = [];
@@ -240,8 +251,11 @@ export async function replaceCustomConfigs(pairs: CustomConfig[]): Promise<void>
   const toDelete = existingCustom.filter((k) => !keep.has(k));
 
   const entries = await Promise.all(
-    clean.map(async ([name, value]): Promise<[string, string]> =>
-      isSecretConfigKey(name) ? [name, await encryptSecret(value)] : [name, value]
+    clean.map(
+      async ([name, value]): Promise<[string, string]> =>
+        isSecretConfigKey(name)
+          ? [name, await encryptSecret(value)]
+          : [name, value]
     )
   );
 
@@ -271,7 +285,10 @@ export async function replaceCustomConfigs(pairs: CustomConfig[]): Promise<void>
 /**
  * Filter configs to only include public-safe keys.
  */
-export function filterPublicConfigs(configs: ConfigMap, publicKeys: string[]): ConfigMap {
+export function filterPublicConfigs(
+  configs: ConfigMap,
+  publicKeys: string[]
+): ConfigMap {
   const result: ConfigMap = {};
   for (const key of publicKeys) {
     if (configs[key]) {

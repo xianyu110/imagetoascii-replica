@@ -1,15 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { respData, respOk, respErr } from '@/lib/resp';
+
 import { getAuth } from '@/core/auth';
 import { hasPermission } from '@/modules/rbac/service';
 import {
+  addMessage,
   getTicketById,
   getTicketMessages,
-  addMessage,
-  updateTicketStatus,
   sanitizeAttachments,
+  updateTicketStatus,
   type TicketStatus,
 } from '@/modules/tickets/service';
+import { respData, respErr, respOk } from '@/lib/resp';
 
 const VALID_STATUSES: TicketStatus[] = ['open', 'replied', 'closed'];
 
@@ -22,7 +23,13 @@ async function checkAdmin(request: Request) {
   return session;
 }
 
-async function GET({ request, params }: { request: Request; params: { id: string } }) {
+async function GET({
+  request,
+  params,
+}: {
+  request: Request;
+  params: { id: string };
+}) {
   try {
     await checkAdmin(request);
     const { id } = params;
@@ -36,7 +43,13 @@ async function GET({ request, params }: { request: Request; params: { id: string
 }
 
 // Admin reply — marks the ticket as replied
-async function POST({ request, params }: { request: Request; params: { id: string } }) {
+async function POST({
+  request,
+  params,
+}: {
+  request: Request;
+  params: { id: string };
+}) {
   try {
     const session = await checkAdmin(request);
     const { id } = params;
@@ -65,7 +78,13 @@ async function POST({ request, params }: { request: Request; params: { id: strin
 }
 
 // Admin updates ticket status (close / reopen)
-async function PATCH({ request, params }: { request: Request; params: { id: string } }) {
+async function PATCH({
+  request,
+  params,
+}: {
+  request: Request;
+  params: { id: string };
+}) {
   try {
     await checkAdmin(request);
     const { id } = params;

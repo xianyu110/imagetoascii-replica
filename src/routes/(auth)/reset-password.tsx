@@ -1,25 +1,22 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
 import { useForm } from '@tanstack/react-form';
+import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
-import { m } from "@/paraglide/messages.js";
-import { useEffect, useState } from "react";
-import { Link, useRouter } from "@/core/i18n/navigation";
-import { resetPassword } from "@/core/auth/client";
-import { envConfigs } from "@/config";
-import { TextField } from "@/components/form-field";
-import { Button } from "@/components/ui/button";
+
+import { resetPassword } from '@/core/auth/client';
+import { Link, useRouter } from '@/core/i18n/navigation';
+import { envConfigs } from '@/config';
+import { m } from '@/paraglide/messages.js';
+import { TextField } from '@/components/form-field';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-} from "@/components/ui/field";
+} from '@/components/ui/card';
+import { Field, FieldDescription, FieldGroup } from '@/components/ui/field';
 
 const resetSchema = z
   .object({
@@ -27,85 +24,94 @@ const resetSchema = z
     confirmPassword: z.string().min(8),
   })
   .refine((d) => d.password === d.confirmPassword, {
-    path: ["confirmPassword"],
-    message: m["common.sign.password_mismatch"](),
+    path: ['confirmPassword'],
+    message: m['common.sign.password_mismatch'](),
   });
 
 function ResetPasswordPage() {
-    const router = useRouter();
+  const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [tokenChecked, setTokenChecked] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const tokenParam = params.get("token");
-    const linkError = params.get("error");
+    const tokenParam = params.get('token');
+    const linkError = params.get('error');
     setToken(linkError ? null : tokenParam);
     setTokenChecked(true);
   }, []);
 
   const form = useForm({
-    defaultValues: { password: "", confirmPassword: "" },
+    defaultValues: { password: '', confirmPassword: '' },
     validators: { onSubmit: resetSchema },
     onSubmit: async ({ value }) => {
-      setError("");
+      setError('');
       if (!token) {
-        setError(m["common.sign.reset_password_missing_token"]());
+        setError(m['common.sign.reset_password_missing_token']());
         return;
       }
       try {
-        const result = await resetPassword({ newPassword: value.password, token });
+        const result = await resetPassword({
+          newPassword: value.password,
+          token,
+        });
         if (result.error) {
-          setError(result.error.message || "Reset failed");
+          setError(result.error.message || 'Reset failed');
         } else {
           setSuccess(true);
-          setTimeout(() => router.push("/sign-in"), 1500);
+          setTimeout(() => router.push('/sign-in'), 1500);
         }
       } catch (err: any) {
-        setError(err.message || "Reset failed");
+        setError(err.message || 'Reset failed');
       }
     },
   });
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+    <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <Link href="/" className="self-center font-serif italic text-lg">
+        <Link href="/" className="self-center font-serif text-lg italic">
           {envConfigs.app_name}
         </Link>
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">{m["common.sign.reset_password_title"]()}</CardTitle>
+            <CardTitle className="text-xl">
+              {m['common.sign.reset_password_title']()}
+            </CardTitle>
             {!success && tokenChecked && token && (
-              <CardDescription>{m["common.sign.reset_password_description"]()}</CardDescription>
+              <CardDescription>
+                {m['common.sign.reset_password_description']()}
+              </CardDescription>
             )}
           </CardHeader>
           <CardContent>
             {!tokenChecked ? null : !token ? (
               <FieldGroup>
-                <div className="rounded-lg bg-destructive/10 text-destructive text-sm p-3 text-center">
-                  {m["common.sign.reset_password_invalid_token"]()}
+                <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-center text-sm">
+                  {m['common.sign.reset_password_invalid_token']()}
                 </div>
                 <Field>
                   <Link
                     href="/forgot-password"
-                    className="text-sm text-center underline underline-offset-4"
+                    className="text-center text-sm underline underline-offset-4"
                   >
-                    {m["common.sign.forgot_password_title"]()}
+                    {m['common.sign.forgot_password_title']()}
                   </Link>
                 </Field>
               </FieldGroup>
             ) : success ? (
               <FieldGroup>
-                <p className="text-sm text-center">{m["common.sign.reset_password_success"]()}</p>
+                <p className="text-center text-sm">
+                  {m['common.sign.reset_password_success']()}
+                </p>
                 <Field>
                   <Link
                     href="/sign-in"
-                    className="text-sm text-center underline underline-offset-4"
+                    className="text-center text-sm underline underline-offset-4"
                   >
-                    {m["common.sign.back_to_sign_in"]()}
+                    {m['common.sign.back_to_sign_in']()}
                   </Link>
                 </Field>
               </FieldGroup>
@@ -118,7 +124,7 @@ function ResetPasswordPage() {
               >
                 <FieldGroup>
                   {error && (
-                    <div className="rounded-lg bg-destructive/10 text-destructive text-sm p-3">
+                    <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
                       {error}
                     </div>
                   )}
@@ -126,10 +132,12 @@ function ResetPasswordPage() {
                     {(field) => (
                       <TextField
                         field={field}
-                        label={m["common.sign.new_password_title"]()}
+                        label={m['common.sign.new_password_title']()}
                         type="password"
                         required
-                        placeholder={m["common.sign.new_password_placeholder"]()}
+                        placeholder={m[
+                          'common.sign.new_password_placeholder'
+                        ]()}
                       />
                     )}
                   </form.Field>
@@ -137,10 +145,12 @@ function ResetPasswordPage() {
                     {(field) => (
                       <TextField
                         field={field}
-                        label={m["common.sign.confirm_password_title"]()}
+                        label={m['common.sign.confirm_password_title']()}
                         type="password"
                         required
-                        placeholder={m["common.sign.confirm_new_password_placeholder"]()}
+                        placeholder={m[
+                          'common.sign.confirm_new_password_placeholder'
+                        ]()}
                       />
                     )}
                   </form.Field>
@@ -148,13 +158,18 @@ function ResetPasswordPage() {
                     <form.Subscribe selector={(s) => s.isSubmitting}>
                       {(isSubmitting) => (
                         <Button type="submit" disabled={isSubmitting}>
-                          {isSubmitting ? "..." : m["common.sign.reset_password_submit"]()}
+                          {isSubmitting
+                            ? '...'
+                            : m['common.sign.reset_password_submit']()}
                         </Button>
                       )}
                     </form.Subscribe>
                     <FieldDescription className="text-center">
-                      <Link href="/sign-in" className="underline underline-offset-4">
-                        {m["common.sign.back_to_sign_in"]()}
+                      <Link
+                        href="/sign-in"
+                        className="underline underline-offset-4"
+                      >
+                        {m['common.sign.back_to_sign_in']()}
                       </Link>
                     </FieldDescription>
                   </Field>

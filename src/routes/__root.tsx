@@ -1,23 +1,24 @@
 /// <reference types="vite/client" />
+import type { ReactNode } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import {
   createRootRoute,
   HeadContent,
   Outlet,
   Scripts,
+  type ErrorComponentProps,
 } from '@tanstack/react-router';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { createServerFn } from '@tanstack/react-start';
 import { ThemeProvider } from 'next-themes';
-import type { ReactNode } from 'react';
 
+import { envConfigs } from '@/config';
+import { getQueryClient } from '@/lib/query-client';
+import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
 import { GoogleAnalytics } from '@/components/analytics/google-analytics';
 import { Plausible } from '@/components/analytics/plausible';
 import { GoogleOneTap } from '@/components/google-one-tap';
 import { Toaster } from '@/components/ui/sonner';
-import { envConfigs } from '@/config';
-import { getQueryClient } from '@/lib/query-client';
-import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
 
 import '@fontsource-variable/inter';
 import '@fontsource/libre-baskerville/400.css';
@@ -70,6 +71,7 @@ export const Route = createRootRoute({
   component: RootComponent,
   shellComponent: RootDocument,
   notFoundComponent: NotFound,
+  errorComponent: RootError,
 });
 
 function RootComponent() {
@@ -117,12 +119,35 @@ function RootDocument({ children }: { children: ReactNode }) {
 
 function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background text-foreground">
+    <div className="bg-background text-foreground flex min-h-screen flex-col items-center justify-center gap-4">
       <h1 className="text-6xl font-bold">404</h1>
       <p className="text-muted-foreground">Page not found</p>
       <a href="/" className="text-sm underline underline-offset-4">
         Back to home
       </a>
+    </div>
+  );
+}
+
+function RootError({ error, reset }: ErrorComponentProps) {
+  return (
+    <div className="bg-background text-foreground flex min-h-screen flex-col items-center justify-center gap-4">
+      <h1 className="text-4xl font-bold">Oops</h1>
+      <p className="text-muted-foreground">
+        Something went wrong. Please try again.
+      </p>
+      {import.meta.env.DEV && error instanceof Error && (
+        <pre className="bg-muted mt-2 max-w-lg overflow-auto rounded p-4 text-xs">
+          {error.message}
+        </pre>
+      )}
+      <button
+        type="button"
+        onClick={reset}
+        className="text-sm underline underline-offset-4"
+      >
+        Try again
+      </button>
     </div>
   );
 }

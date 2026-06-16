@@ -1,17 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Header } from "@/blocks/header";
-import { Hero } from "@/blocks/hero";
-import { Features } from "@/blocks/features";
-import { Pricing } from "@/blocks/pricing";
-import { FAQ } from "@/blocks/faq";
-import { Blog } from "@/blocks/blog";
-import { CTA } from "@/blocks/cta";
-import { Footer } from "@/blocks/footer";
-import { SupportWidget } from "@/blocks/support-widget";
-import { envConfigs } from "@/config";
-import { getBlogPostsFn } from "@/content/posts/server";
-import { m } from "@/paraglide/messages.js";
-import { getLocale, locales, localizeUrl } from "@/paraglide/runtime.js";
+
+import { envConfigs } from '@/config';
+import { m } from '@/paraglide/messages.js';
+import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
+import { Blog } from '@/blocks/blog';
+import { CTA } from '@/blocks/cta';
+import { FAQ } from '@/blocks/faq';
+import { Features } from '@/blocks/features';
+import { Footer } from '@/blocks/footer';
+import { Header } from '@/blocks/header';
+import { Hero } from '@/blocks/hero';
+import { Pricing } from '@/blocks/pricing';
+import { SupportWidget } from '@/blocks/support-widget';
+import { getBlogPostsFn } from '@/content/posts/server';
 
 /**
  * Default landing page — demo content. Rewrite this file (and the blocks in
@@ -22,7 +23,7 @@ function HomePage() {
   const { posts } = Route.useLoaderData();
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <div className="bg-background text-foreground flex min-h-screen flex-col">
       <Header />
       <main>
         <Hero />

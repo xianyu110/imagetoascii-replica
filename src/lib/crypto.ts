@@ -36,8 +36,14 @@ function fromBase64(value: string) {
 }
 
 async function deriveKey(secret: string): Promise<CryptoKey> {
-  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(secret));
-  return crypto.subtle.importKey('raw', hash, 'AES-GCM', false, ['encrypt', 'decrypt']);
+  const hash = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(secret)
+  );
+  return crypto.subtle.importKey('raw', hash, 'AES-GCM', false, [
+    'encrypt',
+    'decrypt',
+  ]);
 }
 
 function getEncryptionSecret(): string | undefined {
@@ -62,7 +68,11 @@ export async function encryptSecret(plain: string): Promise<string> {
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
   // Web Crypto returns ciphertext with the GCM tag appended at the end.
   const sealed = new Uint8Array(
-    await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(plain))
+    await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      new TextEncoder().encode(plain)
+    )
   );
   const ciphertext = sealed.subarray(0, sealed.length - TAG_LENGTH);
   const tag = sealed.subarray(sealed.length - TAG_LENGTH);
@@ -100,7 +110,11 @@ export async function decryptSecret(value: string): Promise<string | null> {
     sealed.set(tag, ciphertext.length);
 
     const key = await deriveKey(secret);
-    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, sealed);
+    const plain = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      sealed
+    );
     return new TextDecoder().decode(plain);
   } catch {
     return null;

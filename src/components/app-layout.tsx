@@ -1,31 +1,32 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useSession } from "@/core/auth/client";
-import { useRouter, usePathname } from "@/core/i18n/navigation";
-import { useUserPermissions } from "@/hooks/use-user-permissions";
-import { apiGet } from "@/lib/api-client";
-import { AppSidebar, type NavItem } from "@/components/app-sidebar";
-import { UserMenu } from "@/components/user-menu";
+import { useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+
+import { useSession } from '@/core/auth/client';
+import { usePathname, useRouter } from '@/core/i18n/navigation';
+import { apiGet } from '@/lib/api-client';
+import { useUserPermissions } from '@/hooks/use-user-permissions';
+import { AppSidebar, type NavItem } from '@/components/app-sidebar';
+import { Separator } from '@/components/ui/separator';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
+} from '@/components/ui/sidebar';
+import { UserMenu } from '@/components/user-menu';
 
 export function AppLayout({
   children,
   navItems,
   footerNavItems,
   brand,
-  brandHref = "/",
+  brandHref = '/',
   mobileBrand,
   headerExtra,
   profileHref,
   requirePermission,
-  unauthorizedRedirect = "/settings",
+  unauthorizedRedirect = '/settings',
 }: {
   children: React.ReactNode;
   navItems: NavItem[];
@@ -49,8 +50,8 @@ export function AppLayout({
   // Invite-only gate: needs the user's membership status (also covers social
   // logins). `needsInvite` is computed server-side in /api/user/info.
   const userInfoQuery = useQuery({
-    queryKey: ["user-info"],
-    queryFn: () => apiGet<{ needsInvite?: boolean }>("/api/user/info"),
+    queryKey: ['user-info'],
+    queryFn: () => apiGet<{ needsInvite?: boolean }>('/api/user/info'),
     staleTime: 60_000,
     enabled: !!session?.user,
   });
@@ -80,7 +81,8 @@ export function AppLayout({
       redirectingRef.current = true;
       // Remember where the user was headed so sign-in can send them back.
       // pathname is already locale-free; append the live query string.
-      const search = typeof window !== "undefined" ? window.location.search : "";
+      const search =
+        typeof window !== 'undefined' ? window.location.search : '';
       const callbackUrl = `${pathname}${search}`;
       router.push(`/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       return;
@@ -92,7 +94,7 @@ export function AppLayout({
     if (needsInvite) {
       if (!redirectingRef.current) {
         redirectingRef.current = true;
-        router.push("/redeem-invite");
+        router.push('/redeem-invite');
       }
       return;
     }
@@ -121,10 +123,10 @@ export function AppLayout({
 
   if (isPending || !authorized || !session?.user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="bg-background flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm text-muted-foreground">Loading...</span>
+          <div className="border-primary size-6 animate-spin rounded-full border-2 border-t-transparent" />
+          <span className="text-muted-foreground text-sm">Loading...</span>
         </div>
       </div>
     );
@@ -139,7 +141,7 @@ export function AppLayout({
         footerNavItems={footerNavItems}
         footer={
           <UserMenu
-            name={session.user.name || "User"}
+            name={session.user.name || 'User'}
             email={session.user.email}
             image={session.user.image}
             profileHref={profileHref}
@@ -159,9 +161,7 @@ export function AppLayout({
             <div className="flex items-center gap-1 px-4">{headerExtra}</div>
           )}
         </header>
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-auto">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

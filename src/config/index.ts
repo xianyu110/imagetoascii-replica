@@ -1,4 +1,5 @@
-export const AUTH_SECRET_PLACEHOLDER = 'shipany-dev-secret-change-in-production';
+export const AUTH_SECRET_PLACEHOLDER =
+  'shipany-dev-secret-change-in-production';
 
 // Isomorphic env access:
 // - Public (client-visible) vars are VITE_-prefixed and read from
@@ -59,7 +60,8 @@ export const envConfigs: Record<string, string> = {
 
   // Email - Resend
   resend_api_key: procEnv.RESEND_API_KEY ?? '',
-  resend_sender_email: procEnv.RESEND_SENDER_EMAIL ?? procEnv.RESEND_EMAIL_FROM ?? '',
+  resend_sender_email:
+    procEnv.RESEND_SENDER_EMAIL ?? procEnv.RESEND_EMAIL_FROM ?? '',
 
   // Storage - S3/R2
   storage_endpoint: procEnv.STORAGE_ENDPOINT ?? '',

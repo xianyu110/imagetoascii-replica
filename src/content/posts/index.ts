@@ -53,10 +53,7 @@ const postModules = import.meta.glob<PostModule>('/src/content/posts/*.mdx', {
   eager: true,
 });
 
-export function loadLocalPost(
-  slug: string,
-  locale: string
-): PostModule | null {
+export function loadLocalPost(slug: string, locale: string): PostModule | null {
   if (!BLOG_POST_SLUGS.includes(slug as (typeof BLOG_POST_SLUGS)[number])) {
     return null;
   }

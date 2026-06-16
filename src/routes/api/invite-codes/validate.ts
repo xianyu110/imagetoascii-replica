@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { respData, respErr } from '@/lib/resp';
+
 import { validateInviteCode } from '@/modules/invite-codes/service';
 import { enforceMinIntervalRateLimit } from '@/lib/rate-limit';
+import { respData, respErr } from '@/lib/resp';
 
 async function POST({ request }: { request: Request }) {
   const limited = enforceMinIntervalRateLimit(request, {

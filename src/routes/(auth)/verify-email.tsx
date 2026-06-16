@@ -1,13 +1,14 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { m } from "@/paraglide/messages.js";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { deLocalizeHref, localizeHref } from "@/paraglide/runtime.js";
-import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { Link, useRouter } from "@/core/i18n/navigation";
-import { authClient, useSession } from "@/core/auth/client";
-import { envConfigs } from "@/config";
-import { Button } from "@/components/ui/button";
+import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { authClient, useSession } from '@/core/auth/client';
+import { Link, useRouter } from '@/core/i18n/navigation';
+import { envConfigs } from '@/config';
+import { m } from '@/paraglide/messages.js';
+import { deLocalizeHref, localizeHref } from '@/paraglide/runtime.js';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -15,32 +16,32 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
 function safeDecodeCallbackUrl(raw?: string | null) {
-  if (!raw) return "/";
+  if (!raw) return '/';
   try {
     const decoded = decodeURIComponent(raw);
-    if (decoded.startsWith("/")) return decoded;
-    return "/";
+    if (decoded.startsWith('/')) return decoded;
+    return '/';
   } catch {
-    return "/";
+    return '/';
   }
 }
 
 function stripLocalePrefix(path: string) {
-  if (!path?.startsWith("/")) return "/";
+  if (!path?.startsWith('/')) return '/';
   return deLocalizeHref(path);
 }
 
 function getCooldownKey(email?: string | null) {
-  return `verify-email:lastSentAt:${String(email || "").toLowerCase()}`;
+  return `verify-email:lastSentAt:${String(email || '').toLowerCase()}`;
 }
 
 function getCooldownRemainingSeconds(email?: string | null) {
-  if (typeof window === "undefined") return 0;
+  if (typeof window === 'undefined') return 0;
   if (!email) return 0;
   const raw = window.localStorage.getItem(getCooldownKey(email));
   const last = raw ? Number(raw) : 0;
@@ -50,7 +51,7 @@ function getCooldownRemainingSeconds(email?: string | null) {
 }
 
 function markSentNow(email?: string | null) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   if (!email) return;
   try {
     window.localStorage.setItem(getCooldownKey(email), String(Date.now()));
@@ -58,7 +59,7 @@ function markSentNow(email?: string | null) {
 }
 
 function VerifyEmailPage() {
-    const router = useRouter();
+  const router = useRouter();
   const { data: session, isPending } = useSession();
   const [email, setEmail] = useState<string | null>(null);
   const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
@@ -69,23 +70,23 @@ function VerifyEmailPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const e = params.get("email");
-    const cb = params.get("callbackUrl");
-    const sent = params.get("sent");
+    const e = params.get('email');
+    const cb = params.get('callbackUrl');
+    const sent = params.get('sent');
 
     setEmail(e);
     setCallbackUrl(cb);
     setParamsReady(true);
 
-    if (sent === "1") {
+    if (sent === '1') {
       if (getCooldownRemainingSeconds(e) === 0) {
         markSentNow(e);
       }
       setCooldownSeconds(getCooldownRemainingSeconds(e));
       try {
         const url = new URL(window.location.href);
-        url.searchParams.delete("sent");
-        window.history.replaceState({}, "", url.toString());
+        url.searchParams.delete('sent');
+        window.history.replaceState({}, '', url.toString());
       } catch {}
     } else {
       setCooldownSeconds(getCooldownRemainingSeconds(e));
@@ -95,7 +96,7 @@ function VerifyEmailPage() {
   // If user lands here without context, send to sign-in.
   useEffect(() => {
     if (paramsReady && !email && !callbackUrl) {
-      router.replace("/sign-in");
+      router.replace('/sign-in');
     }
   }, [paramsReady, email, callbackUrl, router]);
 
@@ -104,24 +105,15 @@ function VerifyEmailPage() {
     return stripLocalePrefix(decoded);
   }, [callbackUrl]);
 
-
   const signInPath = useMemo(() => {
     const query = new URLSearchParams();
-    query.set("callbackUrl", nextUrl || "/");
+    query.set('callbackUrl', nextUrl || '/');
     return `/sign-in?${query.toString()}`;
   }, [nextUrl]);
 
   const hardNavigateToNextUrl = () => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     window.location.assign(localizeHref(nextUrl));
-  };
-
-  const hardNavigateToSignIn = (prefillEmail?: string) => {
-    if (typeof window === "undefined") return;
-    const query = new URLSearchParams();
-    if (prefillEmail) query.set("email", prefillEmail);
-    query.set("callbackUrl", nextUrl || "/");
-    window.location.assign(localizeHref(`/sign-in?${query.toString()}`));
   };
 
   const checkSessionAndRedirect = async () => {
@@ -154,7 +146,7 @@ function VerifyEmailPage() {
 
   // Brief polling on mount: detect verification link → cookie → session.
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     let cancelled = false;
     let attempts = 0;
     const maxAttempts = 12;
@@ -176,22 +168,23 @@ function VerifyEmailPage() {
 
   // Cross-tab sync: re-check session on focus / visibility change.
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     const onFocus = () => void checkSessionAndRedirect();
     const onVisibility = () => {
-      if (document.visibilityState === "visible") void checkSessionAndRedirect();
+      if (document.visibilityState === 'visible')
+        void checkSessionAndRedirect();
     };
-    window.addEventListener("focus", onFocus);
-    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibility);
     return () => {
-      window.removeEventListener("focus", onFocus);
-      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [nextUrl]);
 
   const handleResend = async () => {
     if (!email) {
-      toast.error(m["common.sign.verify_email_email_required"]());
+      toast.error(m['common.sign.verify_email_email_required']());
       return;
     }
     if (loading) return;
@@ -201,16 +194,18 @@ function VerifyEmailPage() {
       setLoading(true);
       const result = await authClient.sendVerificationEmail({
         email,
-        callbackURL: localizeHref(nextUrl || "/"),
+        callbackURL: localizeHref(nextUrl || '/'),
       });
       if (result?.error) {
-        toast.error(result.error.message || m["common.sign.verify_email_send_failed"]());
+        toast.error(
+          result.error.message || m['common.sign.verify_email_send_failed']()
+        );
         return;
       }
       markSentNow(email);
       setCooldownSeconds(getCooldownRemainingSeconds(email));
     } catch (e: any) {
-      toast.error(e?.message || m["common.sign.verify_email_send_failed"]());
+      toast.error(e?.message || m['common.sign.verify_email_send_failed']());
     } finally {
       setLoading(false);
     }
@@ -224,30 +219,29 @@ function VerifyEmailPage() {
     void (async () => {
       await checkSessionAndRedirect();
       const { data } = await authClient.getSession();
-      if (!data?.user) {
-        // Always send the user to sign-in. If they haven't verified yet,
-        // sign-in will surface the correct error there — we deliberately
-        // don't expose an unauthenticated "is X verified?" oracle.
-        const targetEmail = String(email || "").trim().toLowerCase();
-        hardNavigateToSignIn(targetEmail);
+      if (data?.user) {
+        hardNavigateToNextUrl();
+      } else {
+        // User hasn't verified yet — show a toast instead of redirecting
+        toast.error(m['common.sign.verify_email_not_verified_yet']());
       }
     })();
   };
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+    <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <Link href="/" className="self-center font-serif italic text-lg">
+        <Link href="/" className="self-center font-serif text-lg italic">
           {envConfigs.app_name}
         </Link>
         <Card>
           <CardHeader>
             <CardTitle className="text-lg md:text-xl">
-              {m["common.sign.verify_email_page_title"]()}
+              {m['common.sign.verify_email_page_title']()}
             </CardTitle>
             <CardDescription className="text-xs md:text-sm">
-              {m["common.sign.verify_email_page_description"]()}
-              {email ? ` ${email}` : ""}
+              {m['common.sign.verify_email_page_description']()}
+              {email ? ` ${email}` : ''}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -262,9 +256,11 @@ function VerifyEmailPage() {
                 {loading ? (
                   <Loader2 size={16} className="animate-spin" />
                 ) : cooldownSeconds > 0 ? (
-                  m["common.sign.resend_verification_countdown"]({ seconds: cooldownSeconds })
+                  m['common.sign.resend_verification_countdown']({
+                    seconds: cooldownSeconds,
+                  })
                 ) : (
-                  m["common.sign.resend_verification"]()
+                  m['common.sign.resend_verification']()
                 )}
               </Button>
 
@@ -277,7 +273,7 @@ function VerifyEmailPage() {
                 {isPending ? (
                   <Loader2 size={16} className="animate-spin" />
                 ) : (
-                  m["common.sign.verify_email_continue"]()
+                  m['common.sign.verify_email_continue']()
                 )}
               </Button>
 
@@ -287,13 +283,13 @@ function VerifyEmailPage() {
                 className="w-full"
                 onClick={() => router.push(signInPath)}
               >
-                {m["common.sign.back_to_sign_in"]()}
+                {m['common.sign.back_to_sign_in']()}
               </Button>
             </div>
           </CardContent>
           <CardFooter>
-            <p className="w-full text-center text-xs text-muted-foreground">
-              {m["common.sign.verify_email_tip"]()}
+            <p className="text-muted-foreground w-full text-center text-xs">
+              {m['common.sign.verify_email_tip']()}
             </p>
           </CardFooter>
         </Card>

@@ -1,16 +1,25 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { m } from "@/paraglide/messages.js";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
-} from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+} from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { Plus, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+
+import {
+  apiDelete,
+  apiGet,
+  apiPost,
+  pageQuery,
+  type PageResult,
+} from '@/lib/api-client';
+import { m } from '@/paraglide/messages.js';
+import { DataTable, type Column } from '@/components/data-table';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -19,17 +28,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { DataTable, type Column } from "@/components/data-table";
-import {
-  apiDelete,
-  apiGet,
-  apiPost,
-  pageQuery,
-  type PageResult,
-} from "@/lib/api-client";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface ApiKey {
   id: string;
@@ -43,9 +44,9 @@ const PAGE_SIZE = 10;
 function ApiKeysPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [newKeyName, setNewKeyName] = useState("");
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [newKeyName, setNewKeyName] = useState('');
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -58,10 +59,10 @@ function ApiKeysPage() {
   }, [debouncedSearch]);
 
   const listQuery = useQuery({
-    queryKey: ["apikeys", page, debouncedSearch],
+    queryKey: ['apikeys', page, debouncedSearch],
     queryFn: () =>
       apiGet<PageResult<ApiKey>>(
-        pageQuery("/api/apikeys", {
+        pageQuery('/api/apikeys', {
           page,
           pageSize: PAGE_SIZE,
           search: debouncedSearch,
@@ -72,14 +73,14 @@ function ApiKeysPage() {
 
   const createMutation = useMutation({
     mutationFn: (title: string) =>
-      apiPost<{ key: string }>("/api/apikeys", { title }),
+      apiPost<{ key: string }>('/api/apikeys', { title }),
     onSuccess: async (data) => {
-      toast.success(m["settings.apikeys.created"]());
+      toast.success(m['settings.apikeys.created']());
       await navigator.clipboard.writeText(data.key);
-      toast.info(m["settings.apikeys.key_copied"]());
+      toast.info(m['settings.apikeys.key_copied']());
       setOpen(false);
-      setNewKeyName("");
-      queryClient.invalidateQueries({ queryKey: ["apikeys"] });
+      setNewKeyName('');
+      queryClient.invalidateQueries({ queryKey: ['apikeys'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -87,8 +88,8 @@ function ApiKeysPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiDelete(`/api/apikeys?id=${id}`),
     onSuccess: () => {
-      toast.success(m["settings.apikeys.deleted"]());
-      queryClient.invalidateQueries({ queryKey: ["apikeys"] });
+      toast.success(m['settings.apikeys.deleted']());
+      queryClient.invalidateQueries({ queryKey: ['apikeys'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -100,18 +101,16 @@ function ApiKeysPage() {
 
   const columns: Column<ApiKey>[] = [
     {
-      header: m["settings.apikeys.name_col"](),
+      header: m['settings.apikeys.name_col'](),
       cell: (k) => <span className="font-medium">{k.title}</span>,
     },
     {
-      header: m["settings.apikeys.key_col"](),
-      cell: (k) => (
-        <span className="font-mono text-xs">{k.keyPrefix}…</span>
-      ),
+      header: m['settings.apikeys.key_col'](),
+      cell: (k) => <span className="font-mono text-xs">{k.keyPrefix}…</span>,
     },
     {
-      header: m["settings.apikeys.actions_col"](),
-      className: "w-[100px]",
+      header: m['settings.apikeys.actions_col'](),
+      className: 'w-[100px]',
       cell: (k) => (
         <div className="flex gap-1">
           <Button
@@ -128,41 +127,50 @@ function ApiKeysPage() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{m["settings.apikeys.title"]()}</h1>
+          <h1 className="text-2xl font-bold">
+            {m['settings.apikeys.title']()}
+          </h1>
           <p className="text-muted-foreground">
-            {m["settings.apikeys.description"]()}
+            {m['settings.apikeys.description']()}
           </p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-medium h-8 gap-1.5 px-2.5 hover:bg-primary/80 transition-colors">
+          <DialogTrigger className="bg-primary text-primary-foreground hover:bg-primary/80 inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-medium transition-colors">
             <Plus className="size-4" />
-            {m["settings.apikeys.create_key"]()}
+            {m['settings.apikeys.create_key']()}
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{m["settings.apikeys.create_title"]()}</DialogTitle>
+              <DialogTitle>{m['settings.apikeys.create_title']()}</DialogTitle>
               <DialogDescription>
-                {m["settings.apikeys.create_description"]()}
+                {m['settings.apikeys.create_description']()}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-2 py-4">
-              <Label htmlFor="key-name">{m["settings.apikeys.key_name"]()}</Label>
+              <Label htmlFor="key-name">
+                {m['settings.apikeys.key_name']()}
+              </Label>
               <Input
                 id="key-name"
                 value={newKeyName}
                 onChange={(e) => setNewKeyName(e.target.value)}
-                placeholder={m["settings.apikeys.key_name_placeholder"]()}
+                placeholder={m['settings.apikeys.key_name_placeholder']()}
               />
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>
-                {m["settings.apikeys.cancel"]()}
+                {m['settings.apikeys.cancel']()}
               </Button>
-              <Button onClick={handleCreate} disabled={createMutation.isPending}>
-                {createMutation.isPending ? m["settings.apikeys.creating"]() : m["settings.apikeys.create"]()}
+              <Button
+                onClick={handleCreate}
+                disabled={createMutation.isPending}
+              >
+                {createMutation.isPending
+                  ? m['settings.apikeys.creating']()
+                  : m['settings.apikeys.create']()}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -179,7 +187,7 @@ function ApiKeysPage() {
             pageSize={PAGE_SIZE}
             onPageChange={setPage}
             rowKey={(k) => k.id}
-            emptyText={m["settings.apikeys.no_keys"]()}
+            emptyText={m['settings.apikeys.no_keys']()}
             search={search}
             onSearchChange={setSearch}
             onRefresh={() => listQuery.refetch()}

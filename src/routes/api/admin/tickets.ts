@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { respPage, respErr } from '@/lib/resp';
+
 import { getAuth } from '@/core/auth';
 import { hasPermission } from '@/modules/rbac/service';
 import { listAllTickets, type TicketStatus } from '@/modules/tickets/service';
+import { respErr, respPage } from '@/lib/resp';
 
 const VALID_STATUSES: TicketStatus[] = ['open', 'replied', 'closed'];
 
@@ -21,7 +22,10 @@ async function GET({ request }: { request: Request }) {
 
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '20')));
+    const pageSize = Math.min(
+      100,
+      Math.max(1, parseInt(searchParams.get('pageSize') || '20'))
+    );
     const status = searchParams.get('status') as TicketStatus | null;
     const search = searchParams.get('keyword') || undefined;
 

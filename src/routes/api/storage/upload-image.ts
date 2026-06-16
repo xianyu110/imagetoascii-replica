@@ -1,12 +1,13 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createFileRoute } from '@tanstack/react-router';
-import { envConfigs } from '@/config';
-import { md5 } from '@/lib/hash';
-import { respData, respErr } from '@/lib/resp';
+
 import { getAuth } from '@/core/auth';
+import { envConfigs } from '@/config';
 import { getStorage } from '@/modules/storage/service';
+import { md5 } from '@/lib/hash';
 import { enforceMinIntervalRateLimit } from '@/lib/rate-limit';
+import { respData, respErr } from '@/lib/resp';
 
 const extFromMime = (mimeType: string) => {
   const map: Record<string, string> = {
@@ -24,7 +25,8 @@ const extFromMime = (mimeType: string) => {
 };
 
 // Cap for the no-storage local-disk fallback (dev). Configurable via INLINE_IMAGE_MAX_KB.
-const INLINE_MAX_BYTES = (Number(envConfigs.inline_image_max_kb) || 10240) * 1024;
+const INLINE_MAX_BYTES =
+  (Number(envConfigs.inline_image_max_kb) || 10240) * 1024;
 
 async function POST({ request }: { request: Request }) {
   const limited = enforceMinIntervalRateLimit(request, {
@@ -43,7 +45,12 @@ async function POST({ request }: { request: Request }) {
     if (!files.length) return respErr('No files provided');
 
     const storage = await getStorage();
-    const uploadResults: Array<{ url: string; key: string; filename: string; deduped: boolean }> = [];
+    const uploadResults: Array<{
+      url: string;
+      key: string;
+      filename: string;
+      deduped: boolean;
+    }> = [];
 
     for (const file of files) {
       if (!file.type.startsWith('image/')) {
@@ -54,8 +61,11 @@ async function POST({ request }: { request: Request }) {
       const body = new Uint8Array(arrayBuffer);
 
       const digest = md5(body);
-      const ext = (extFromMime(file.type) || file.name.split('.').pop() || 'bin')
-        .replace(/[^a-zA-Z0-9]/g, '') || 'bin';
+      const ext =
+        (extFromMime(file.type) || file.name.split('.').pop() || 'bin').replace(
+          /[^a-zA-Z0-9]/g,
+          ''
+        ) || 'bin';
       // R2Provider prepends its own uploadPath (default `uploads`), so the object
       // key is the bare filename. The local fallback uses `public/uploads/<file>`.
       const objectKey = `${digest}.${ext}`;
@@ -67,7 +77,7 @@ async function POST({ request }: { request: Request }) {
         if (body.length > INLINE_MAX_BYTES) {
           const limitKb = Math.round(INLINE_MAX_BYTES / 1024);
           return respErr(
-            `Image too large (${(body.length / 1024).toFixed(0)}KB > ${limitKb}KB). Configure storage or use a smaller image.`,
+            `Image too large (${(body.length / 1024).toFixed(0)}KB > ${limitKb}KB). Configure storage or use a smaller image.`
           );
         }
         const dir = path.join(process.cwd(), 'public', 'uploads');
@@ -86,7 +96,12 @@ async function POST({ request }: { request: Request }) {
       if (exists) {
         const publicUrl = storage.getPublicUrl({ key: objectKey });
         if (publicUrl) {
-          uploadResults.push({ url: publicUrl, key: objectKey, filename: file.name, deduped: true });
+          uploadResults.push({
+            url: publicUrl,
+            key: objectKey,
+            filename: file.name,
+            deduped: true,
+          });
           continue;
         }
       }

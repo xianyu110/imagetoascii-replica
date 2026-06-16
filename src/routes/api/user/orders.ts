@@ -1,9 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { desc, count, eq, and, like, or, type SQL } from 'drizzle-orm';
-import { respPage, respErr } from '@/lib/resp';
+import { and, count, desc, eq, like, or, type SQL } from 'drizzle-orm';
+
 import { getAuth } from '@/core/auth';
 import { db } from '@/core/db';
 import { order } from '@/config/db/schema';
+import { respErr, respPage } from '@/lib/resp';
 
 async function GET({ request }: { request: Request }) {
   try {
@@ -13,7 +14,10 @@ async function GET({ request }: { request: Request }) {
 
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '20')));
+    const pageSize = Math.min(
+      100,
+      Math.max(1, parseInt(searchParams.get('pageSize') || '20'))
+    );
     const offset = (page - 1) * pageSize;
 
     const paymentType = searchParams.get('paymentType');
@@ -28,14 +32,17 @@ async function GET({ request }: { request: Request }) {
         or(
           like(order.orderNo, `%${search}%`),
           like(order.productName, `%${search}%`),
-          like(order.planName, `%${search}%`),
-        )!,
+          like(order.planName, `%${search}%`)
+        )!
       );
     }
 
     const where = and(...conditions);
 
-    const [totalResult] = await db().select({ count: count() }).from(order).where(where);
+    const [totalResult] = await db()
+      .select({ count: count() })
+      .from(order)
+      .where(where);
 
     const rows = await db()
       .select({

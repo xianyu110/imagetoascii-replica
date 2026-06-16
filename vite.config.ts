@@ -1,10 +1,10 @@
+import { readFileSync } from 'node:fs';
+import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import mdx from '@mdx-js/rollup';
 import tailwindcss from '@tailwindcss/vite';
-import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import viteReact from '@vitejs/plugin-react';
 import { nitro } from 'nitro/vite';
-import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
 
 import { loadEnvFiles } from './src/lib/env';
@@ -21,14 +21,20 @@ loadEnvFiles();
 // dead weight when the backend is D1. Which driver the bundle keeps follows
 // wrangler.jsonc `vars.DATABASE_PROVIDER` (the runtime truth on workerd) —
 // d1 stubs both, postgresql keeps postgres.js for the Hyperdrive binding.
-const isCloudflareBuild = (process.env.NITRO_PRESET || '').includes('cloudflare');
-const driverStub = new URL('./src/core/db/driver-stub.ts', import.meta.url).pathname;
+const isCloudflareBuild = (process.env.NITRO_PRESET || '').includes(
+  'cloudflare'
+);
+const driverStub = new URL('./src/core/db/driver-stub.ts', import.meta.url)
+  .pathname;
 
 // Prefer wrangler.jsonc over the build-time env, which can be polluted by
 // .env.local (e.g. DATABASE_PROVIDER=sqlite for local dev).
 function workersDbProvider(): string {
   try {
-    const raw = readFileSync(new URL('./wrangler.jsonc', import.meta.url), 'utf8');
+    const raw = readFileSync(
+      new URL('./wrangler.jsonc', import.meta.url),
+      'utf8'
+    );
     const m = raw.match(/"DATABASE_PROVIDER"\s*:\s*"([^"]+)"/);
     if (m) return m[1];
   } catch {

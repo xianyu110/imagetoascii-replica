@@ -1,10 +1,11 @@
 import { createServerFn } from '@tanstack/react-start';
 
-import type { BlogPost, BlogPostDetail } from './index';
 import {
   getLocalPosts,
   loadLocalPost,
   mergePosts,
+  type BlogPost,
+  type BlogPostDetail,
 } from './index';
 
 // Database access stays behind server functions (dynamic import keeps

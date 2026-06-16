@@ -4,36 +4,36 @@
 // (MarkdownContent) is untouched.
 
 import { useEffect, useRef } from 'react';
-import { useEditor, EditorContent, type Editor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
 import { Image as TiptapImage } from '@tiptap/extension-image';
 import { Placeholder } from '@tiptap/extension-placeholder';
-import MarkdownIt from 'markdown-it';
-import TurndownService from 'turndown';
+import { EditorContent, useEditor, type Editor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 import {
   Bold,
-  Italic,
-  Strikethrough,
   Code,
   Heading2,
   Heading3,
+  Image as ImageIcon,
+  Italic,
+  Link as LinkIcon,
   List,
   ListOrdered,
-  Quote,
-  SquareCode,
-  Link as LinkIcon,
-  Unlink,
-  Image as ImageIcon,
-  Minus,
-  Undo,
-  Redo,
   Loader2,
+  Minus,
+  Quote,
+  Redo,
+  SquareCode,
+  Strikethrough,
+  Undo,
+  Unlink,
 } from 'lucide-react';
+import MarkdownIt from 'markdown-it';
 import { toast } from 'sonner';
+import TurndownService from 'turndown';
 
-import { Button } from '@/components/ui/button';
-import { markdownStyles } from '@/components/markdown-content';
 import { cn } from '@/lib/utils';
+import { markdownStyles } from '@/components/markdown-content';
+import { Button } from '@/components/ui/button';
 
 const md = new MarkdownIt({ html: false, linkify: true });
 
@@ -87,7 +87,11 @@ function ToolbarButton({
   );
 }
 
-function Toolbar({ editor, uploading, onPickImage }: {
+function Toolbar({
+  editor,
+  uploading,
+  onPickImage,
+}: {
   editor: Editor;
   uploading: boolean;
   onPickImage: () => void;
@@ -106,57 +110,124 @@ function Toolbar({ editor, uploading, onPickImage }: {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-muted/30 p-1">
-      <ToolbarButton label="Bold" active={editor.isActive('bold')} onClick={() => chain().toggleBold().run()}>
+    <div className="border-border bg-muted/30 flex flex-wrap items-center gap-0.5 border-b p-1">
+      <ToolbarButton
+        label="Bold"
+        active={editor.isActive('bold')}
+        onClick={() => chain().toggleBold().run()}
+      >
         <Bold className="size-4" />
       </ToolbarButton>
-      <ToolbarButton label="Italic" active={editor.isActive('italic')} onClick={() => chain().toggleItalic().run()}>
+      <ToolbarButton
+        label="Italic"
+        active={editor.isActive('italic')}
+        onClick={() => chain().toggleItalic().run()}
+      >
         <Italic className="size-4" />
       </ToolbarButton>
-      <ToolbarButton label="Strikethrough" active={editor.isActive('strike')} onClick={() => chain().toggleStrike().run()}>
+      <ToolbarButton
+        label="Strikethrough"
+        active={editor.isActive('strike')}
+        onClick={() => chain().toggleStrike().run()}
+      >
         <Strikethrough className="size-4" />
       </ToolbarButton>
-      <ToolbarButton label="Inline code" active={editor.isActive('code')} onClick={() => chain().toggleCode().run()}>
+      <ToolbarButton
+        label="Inline code"
+        active={editor.isActive('code')}
+        onClick={() => chain().toggleCode().run()}
+      >
         <Code className="size-4" />
       </ToolbarButton>
-      <span className="mx-1 h-5 w-px bg-border" />
-      <ToolbarButton label="Heading 2" active={editor.isActive('heading', { level: 2 })} onClick={() => chain().toggleHeading({ level: 2 }).run()}>
+      <span className="bg-border mx-1 h-5 w-px" />
+      <ToolbarButton
+        label="Heading 2"
+        active={editor.isActive('heading', { level: 2 })}
+        onClick={() => chain().toggleHeading({ level: 2 }).run()}
+      >
         <Heading2 className="size-4" />
       </ToolbarButton>
-      <ToolbarButton label="Heading 3" active={editor.isActive('heading', { level: 3 })} onClick={() => chain().toggleHeading({ level: 3 }).run()}>
+      <ToolbarButton
+        label="Heading 3"
+        active={editor.isActive('heading', { level: 3 })}
+        onClick={() => chain().toggleHeading({ level: 3 }).run()}
+      >
         <Heading3 className="size-4" />
       </ToolbarButton>
-      <span className="mx-1 h-5 w-px bg-border" />
-      <ToolbarButton label="Bullet list" active={editor.isActive('bulletList')} onClick={() => chain().toggleBulletList().run()}>
+      <span className="bg-border mx-1 h-5 w-px" />
+      <ToolbarButton
+        label="Bullet list"
+        active={editor.isActive('bulletList')}
+        onClick={() => chain().toggleBulletList().run()}
+      >
         <List className="size-4" />
       </ToolbarButton>
-      <ToolbarButton label="Ordered list" active={editor.isActive('orderedList')} onClick={() => chain().toggleOrderedList().run()}>
+      <ToolbarButton
+        label="Ordered list"
+        active={editor.isActive('orderedList')}
+        onClick={() => chain().toggleOrderedList().run()}
+      >
         <ListOrdered className="size-4" />
       </ToolbarButton>
-      <ToolbarButton label="Blockquote" active={editor.isActive('blockquote')} onClick={() => chain().toggleBlockquote().run()}>
+      <ToolbarButton
+        label="Blockquote"
+        active={editor.isActive('blockquote')}
+        onClick={() => chain().toggleBlockquote().run()}
+      >
         <Quote className="size-4" />
       </ToolbarButton>
-      <ToolbarButton label="Code block" active={editor.isActive('codeBlock')} onClick={() => chain().toggleCodeBlock().run()}>
+      <ToolbarButton
+        label="Code block"
+        active={editor.isActive('codeBlock')}
+        onClick={() => chain().toggleCodeBlock().run()}
+      >
         <SquareCode className="size-4" />
       </ToolbarButton>
-      <span className="mx-1 h-5 w-px bg-border" />
-      <ToolbarButton label="Link" active={editor.isActive('link')} onClick={setLink}>
+      <span className="bg-border mx-1 h-5 w-px" />
+      <ToolbarButton
+        label="Link"
+        active={editor.isActive('link')}
+        onClick={setLink}
+      >
         <LinkIcon className="size-4" />
       </ToolbarButton>
-      <ToolbarButton label="Remove link" disabled={!editor.isActive('link')} onClick={() => chain().unsetLink().run()}>
+      <ToolbarButton
+        label="Remove link"
+        disabled={!editor.isActive('link')}
+        onClick={() => chain().unsetLink().run()}
+      >
         <Unlink className="size-4" />
       </ToolbarButton>
-      <ToolbarButton label="Insert image" disabled={uploading} onClick={onPickImage}>
-        {uploading ? <Loader2 className="size-4 animate-spin" /> : <ImageIcon className="size-4" />}
+      <ToolbarButton
+        label="Insert image"
+        disabled={uploading}
+        onClick={onPickImage}
+      >
+        {uploading ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : (
+          <ImageIcon className="size-4" />
+        )}
       </ToolbarButton>
-      <ToolbarButton label="Horizontal rule" onClick={() => chain().setHorizontalRule().run()}>
+      <ToolbarButton
+        label="Horizontal rule"
+        onClick={() => chain().setHorizontalRule().run()}
+      >
         <Minus className="size-4" />
       </ToolbarButton>
-      <span className="mx-1 h-5 w-px bg-border" />
-      <ToolbarButton label="Undo" disabled={!editor.can().undo()} onClick={() => chain().undo().run()}>
+      <span className="bg-border mx-1 h-5 w-px" />
+      <ToolbarButton
+        label="Undo"
+        disabled={!editor.can().undo()}
+        onClick={() => chain().undo().run()}
+      >
         <Undo className="size-4" />
       </ToolbarButton>
-      <ToolbarButton label="Redo" disabled={!editor.can().redo()} onClick={() => chain().redo().run()}>
+      <ToolbarButton
+        label="Redo"
+        disabled={!editor.can().redo()}
+        onClick={() => chain().redo().run()}
+      >
         <Redo className="size-4" />
       </ToolbarButton>
     </div>
@@ -242,14 +313,19 @@ export function RichTextEditor({
 
   if (!editor) {
     return (
-      <div className={cn('min-h-[330px] rounded-md border border-input bg-transparent', className)} />
+      <div
+        className={cn(
+          'border-input min-h-[330px] rounded-md border bg-transparent',
+          className
+        )}
+      />
     );
   }
 
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-md border border-input bg-transparent focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50',
+        'border-input focus-within:border-ring focus-within:ring-ring/50 overflow-hidden rounded-md border bg-transparent focus-within:ring-[3px]',
         className
       )}
     >

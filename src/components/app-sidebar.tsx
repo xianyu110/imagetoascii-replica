@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { ChevronRight, type LucideIcon } from "lucide-react";
-import { Link, usePathname } from "@/core/i18n/navigation";
-import { localizeHref } from "@/paraglide/runtime.js";
+import { useEffect, useState } from 'react';
+import { ChevronRight, type LucideIcon } from 'lucide-react';
+
+import { Link, usePathname } from '@/core/i18n/navigation';
+import { localizeHref } from '@/paraglide/runtime.js';
 import {
   Sidebar,
   SidebarContent,
@@ -18,7 +19,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from "@/components/ui/sidebar";
+} from '@/components/ui/sidebar';
 
 export interface NavSubItem {
   href: string;
@@ -38,7 +39,7 @@ export interface NavItem {
 
 export function AppSidebar({
   brand,
-  brandHref = "/",
+  brandHref = '/',
   navItems,
   footerNavItems,
   footer,
@@ -53,7 +54,7 @@ export function AppSidebar({
 
   // Group nav items by their (static) group label.
   const groups: { label?: string; items: NavItem[] }[] = [];
-  let currentGroup: string | undefined = "__initial__";
+  let currentGroup: string | undefined = '__initial__';
   for (const item of navItems) {
     if (item.group !== currentGroup) {
       groups.push({ label: item.group, items: [item] });
@@ -68,7 +69,7 @@ export function AppSidebar({
   const isActiveHref = (href: string) =>
     href === navItems[0]?.href
       ? pathname === href
-      : pathname === href || pathname.startsWith(href + "/");
+      : pathname === href || pathname.startsWith(href + '/');
 
   // Hrefs of parent items whose sub-items contain the current route.
   const activeParents = () => {
@@ -87,7 +88,7 @@ export function AppSidebar({
   useEffect(() => {
     let saved: string[] | null = null;
     try {
-      saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+      saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
     } catch {}
     setOpenItems(() => {
       const next = saved ? new Set(saved) : new Set<string>();
@@ -132,9 +133,9 @@ export function AppSidebar({
           <SidebarMenuItem>
             <Link
               href={brandHref}
-              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm"
             >
-              <span className="flex-1 font-serif italic text-lg leading-none">
+              <span className="flex-1 font-serif text-lg leading-none italic">
                 {brand}
               </span>
             </Link>
@@ -145,7 +146,9 @@ export function AppSidebar({
       <SidebarContent>
         {groups.map((group, gi) => (
           <SidebarGroup key={gi}>
-            {group.label && <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
+            {group.label && (
+              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            )}
             <SidebarGroupContent className="flex flex-col gap-2">
               <SidebarMenu>
                 {group.items.map((item) => {
@@ -168,8 +171,8 @@ export function AppSidebar({
                           <Icon />
                           <span>{item.label}</span>
                           <ChevronRight
-                            className={`ml-auto size-4 shrink-0 text-muted-foreground transition-transform ${
-                              open ? "rotate-90" : ""
+                            className={`text-muted-foreground ml-auto size-4 shrink-0 transition-transform ${
+                              open ? 'rotate-90' : ''
                             }`}
                           />
                         </SidebarMenuButton>
@@ -219,8 +222,8 @@ export function AppSidebar({
               const Icon = item.icon;
               const isActive = item.newTab
                 ? false
-                : item.href === "/"
-                  ? pathname === "/"
+                : item.href === '/'
+                  ? pathname === '/'
                   : pathname.startsWith(item.href);
               const button = (
                 <SidebarMenuButton tooltip={item.label} isActive={isActive}>

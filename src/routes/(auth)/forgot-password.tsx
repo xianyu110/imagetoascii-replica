@@ -1,77 +1,81 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { useState } from 'react';
 import { useForm } from '@tanstack/react-form';
+import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
-import { m } from "@/paraglide/messages.js";
-import { useState } from "react";
-import { localizeHref } from "@/paraglide/runtime.js";
-import { Link } from "@/core/i18n/navigation";
-import { requestPasswordReset } from "@/core/auth/client";
-import { envConfigs } from "@/config";
-import { usePublicConfig } from "@/hooks/use-public-config";
-import { TextField } from "@/components/form-field";
-import { Button } from "@/components/ui/button";
+
+import { requestPasswordReset } from '@/core/auth/client';
+import { Link } from '@/core/i18n/navigation';
+import { envConfigs } from '@/config';
+import { m } from '@/paraglide/messages.js';
+import { localizeHref } from '@/paraglide/runtime.js';
+import { usePublicConfig } from '@/hooks/use-public-config';
+import { TextField } from '@/components/form-field';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-} from "@/components/ui/field";
+} from '@/components/ui/card';
+import { Field, FieldDescription, FieldGroup } from '@/components/ui/field';
 
 const forgotSchema = z.object({
-  email: z.string().email(m["common.sign.email_placeholder"]()),
+  email: z.string().email(m['common.sign.email_placeholder']()),
 });
 
 function ForgotPasswordPage() {
-    const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
-  const [sentEmail, setSentEmail] = useState("");
+  const [sentEmail, setSentEmail] = useState('');
 
   const configQuery = usePublicConfig();
   const configs = configQuery.data ?? {};
 
   const configsLoaded = configQuery.isSuccess;
-  const passwordResetEnabled = configs.password_reset_enabled === "true";
+  const passwordResetEnabled = configs.password_reset_enabled === 'true';
 
   const form = useForm({
-    defaultValues: { email: "" },
+    defaultValues: { email: '' },
     validators: { onSubmit: forgotSchema },
     onSubmit: async ({ value }) => {
-      setError("");
+      setError('');
       try {
         const origin = window.location.origin;
-        const redirectTo = `${origin}${localizeHref("/reset-password")}`;
-        const result = await requestPasswordReset({ email: value.email, redirectTo });
+        const redirectTo = `${origin}${localizeHref('/reset-password')}`;
+        const result = await requestPasswordReset({
+          email: value.email,
+          redirectTo,
+        });
         if (result.error) {
-          setError(result.error.message || "Request failed");
+          setError(result.error.message || 'Request failed');
         } else {
           setSentEmail(value.email);
           setSent(true);
         }
       } catch (err: any) {
-        setError(err.message || "Request failed");
+        setError(err.message || 'Request failed');
       }
     },
   });
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+    <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <Link href="/" className="self-center font-serif italic text-lg">
+        <Link href="/" className="self-center font-serif text-lg italic">
           {envConfigs.app_name}
         </Link>
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-xl">
-              {sent ? m["common.sign.reset_link_sent_title"]() : m["common.sign.forgot_password_title"]()}
+              {sent
+                ? m['common.sign.reset_link_sent_title']()
+                : m['common.sign.forgot_password_title']()}
             </CardTitle>
             {!sent && (
-              <CardDescription>{m["common.sign.forgot_password_description"]()}</CardDescription>
+              <CardDescription>
+                {m['common.sign.forgot_password_description']()}
+              </CardDescription>
             )}
           </CardHeader>
           <CardContent>
@@ -79,32 +83,34 @@ function ForgotPasswordPage() {
               <FieldGroup>
                 <div className="rounded-lg border border-dashed p-6 text-center">
                   <p className="text-sm font-medium">
-                    {m["common.sign.password_reset_unavailable_title"]()}
+                    {m['common.sign.password_reset_unavailable_title']()}
                   </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {m["common.sign.password_reset_unavailable_description"]()}
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    {m['common.sign.password_reset_unavailable_description']()}
                   </p>
                 </div>
                 <Field>
                   <Link
                     href="/sign-in"
-                    className="text-sm text-center underline underline-offset-4"
+                    className="text-center text-sm underline underline-offset-4"
                   >
-                    {m["common.sign.back_to_sign_in"]()}
+                    {m['common.sign.back_to_sign_in']()}
                   </Link>
                 </Field>
               </FieldGroup>
             ) : sent ? (
               <FieldGroup>
-                <p className="text-sm text-muted-foreground text-center">
-                  {m["common.sign.reset_link_sent_description"]({ email: sentEmail })}
+                <p className="text-muted-foreground text-center text-sm">
+                  {m['common.sign.reset_link_sent_description']({
+                    email: sentEmail,
+                  })}
                 </p>
                 <Field>
                   <Link
                     href="/sign-in"
-                    className="text-sm text-center underline underline-offset-4"
+                    className="text-center text-sm underline underline-offset-4"
                   >
-                    {m["common.sign.back_to_sign_in"]()}
+                    {m['common.sign.back_to_sign_in']()}
                   </Link>
                 </Field>
               </FieldGroup>
@@ -117,7 +123,7 @@ function ForgotPasswordPage() {
               >
                 <FieldGroup>
                   {error && (
-                    <div className="rounded-lg bg-destructive/10 text-destructive text-sm p-3">
+                    <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
                       {error}
                     </div>
                   )}
@@ -125,10 +131,10 @@ function ForgotPasswordPage() {
                     {(field) => (
                       <TextField
                         field={field}
-                        label={m["common.sign.email_title"]()}
+                        label={m['common.sign.email_title']()}
                         type="email"
                         required
-                        placeholder={m["common.sign.email_placeholder"]()}
+                        placeholder={m['common.sign.email_placeholder']()}
                       />
                     )}
                   </form.Field>
@@ -136,13 +142,18 @@ function ForgotPasswordPage() {
                     <form.Subscribe selector={(s) => s.isSubmitting}>
                       {(isSubmitting) => (
                         <Button type="submit" disabled={isSubmitting}>
-                          {isSubmitting ? "..." : m["common.sign.send_reset_link"]()}
+                          {isSubmitting
+                            ? '...'
+                            : m['common.sign.send_reset_link']()}
                         </Button>
                       )}
                     </form.Subscribe>
                     <FieldDescription className="text-center">
-                      <Link href="/sign-in" className="underline underline-offset-4">
-                        {m["common.sign.back_to_sign_in"]()}
+                      <Link
+                        href="/sign-in"
+                        className="underline underline-offset-4"
+                      >
+                        {m['common.sign.back_to_sign_in']()}
                       </Link>
                     </FieldDescription>
                   </Field>

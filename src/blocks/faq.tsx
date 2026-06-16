@@ -1,25 +1,30 @@
-import { m } from "@/paraglide/messages.js";
-import { tDynamic } from "@/core/i18n/dynamic";
+import { tDynamic } from '@/core/i18n/dynamic';
+import { m } from '@/paraglide/messages.js';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from '@/components/ui/accordion';
 
-const FAQ_KEYS = ["stack", "payment", "database", "customize", "license"] as const;
+const FAQ_KEYS = [
+  'stack',
+  'payment',
+  'database',
+  'customize',
+  'license',
+] as const;
 
 export function FAQ() {
-  
   return (
     <section id="faq" className="px-4 py-24 sm:py-32">
       <div className="mx-auto max-w-3xl">
-        <div className="text-center mb-16">
-          <h2 className="font-serif font-medium text-4xl sm:text-5xl tracking-tight">
-            {m["landing.faq.title"]()}
+        <div className="mb-16 text-center">
+          <h2 className="font-serif text-4xl font-medium tracking-tight sm:text-5xl">
+            {m['landing.faq.title']()}
           </h2>
-          <p className="mt-5 text-muted-foreground">
-            {m["landing.faq.description"]()}
+          <p className="text-muted-foreground mt-5">
+            {m['landing.faq.description']()}
           </p>
         </div>
         <Accordion className="w-full">
@@ -28,7 +33,7 @@ export function FAQ() {
               <AccordionTrigger className="cursor-pointer py-6 text-left text-base font-medium hover:no-underline">
                 {tDynamic(`landing.faq.${key}.question`)}
               </AccordionTrigger>
-              <AccordionContent className="pb-6 text-muted-foreground leading-relaxed">
+              <AccordionContent className="text-muted-foreground pb-6 leading-relaxed">
                 {tDynamic(`landing.faq.${key}.answer`)}
               </AccordionContent>
             </AccordionItem>

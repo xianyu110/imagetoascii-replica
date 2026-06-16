@@ -1,24 +1,32 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { respData, respOk, respErr } from '@/lib/resp';
+
 import { getAuth } from '@/core/auth';
 import {
+  addMessage,
   getTicketById,
   getTicketMessages,
-  addMessage,
-  updateTicketStatus,
   sanitizeAttachments,
+  updateTicketStatus,
 } from '@/modules/tickets/service';
+import { respData, respErr, respOk } from '@/lib/resp';
 
 async function getOwnedTicket(request: Request, id: string) {
   const auth = getAuth();
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session?.user) throw new Error('Unauthorized');
   const row = await getTicketById(id);
-  if (!row || row.userId !== session.user.id) throw new Error('Ticket not found');
+  if (!row || row.userId !== session.user.id)
+    throw new Error('Ticket not found');
   return { session, ticket: row };
 }
 
-async function GET({ request, params }: { request: Request; params: { id: string } }) {
+async function GET({
+  request,
+  params,
+}: {
+  request: Request;
+  params: { id: string };
+}) {
   try {
     const { id } = params;
     const { ticket } = await getOwnedTicket(request, id);
@@ -30,7 +38,13 @@ async function GET({ request, params }: { request: Request; params: { id: string
 }
 
 // User reply — re-opens the ticket for admin attention
-async function POST({ request, params }: { request: Request; params: { id: string } }) {
+async function POST({
+  request,
+  params,
+}: {
+  request: Request;
+  params: { id: string };
+}) {
   try {
     const { id } = params;
     const { session, ticket } = await getOwnedTicket(request, id);
@@ -58,7 +72,13 @@ async function POST({ request, params }: { request: Request; params: { id: strin
 }
 
 // User closes their own ticket
-async function PATCH({ request, params }: { request: Request; params: { id: string } }) {
+async function PATCH({
+  request,
+  params,
+}: {
+  request: Request;
+  params: { id: string };
+}) {
   try {
     const { id } = params;
     await getOwnedTicket(request, id);

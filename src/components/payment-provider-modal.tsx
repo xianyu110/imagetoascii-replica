@@ -1,22 +1,23 @@
-"use client";
+'use client';
 
-import { m } from "@/paraglide/messages.js";
-import { CreditCard, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CreditCard, Loader2 } from 'lucide-react';
+
+import { m } from '@/paraglide/messages.js';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
 export type PaymentProvider =
-  | "stripe"
-  | "creem"
-  | "paypal"
-  | "alipay"
-  | "wechat";
+  | 'stripe'
+  | 'creem'
+  | 'paypal'
+  | 'alipay'
+  | 'wechat';
 
 interface Props {
   open: boolean;
@@ -29,11 +30,11 @@ interface Props {
 }
 
 const providerLabel: Record<PaymentProvider, string> = {
-  stripe: "Stripe",
-  creem: "Creem",
-  paypal: "PayPal",
-  alipay: "Alipay",
-  wechat: "WeChat Pay",
+  stripe: 'Stripe',
+  creem: 'Creem',
+  paypal: 'PayPal',
+  alipay: 'Alipay',
+  wechat: 'WeChat Pay',
 };
 
 export function PaymentProviderModal({
@@ -45,18 +46,17 @@ export function PaymentProviderModal({
   planName,
   price,
 }: Props) {
-  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{m["common.pricing.choose_payment"]()}</DialogTitle>
+          <DialogTitle>{m['common.pricing.choose_payment']()}</DialogTitle>
           <DialogDescription>
             {planName
               ? price
-                ? m["common.pricing.payment_for"]({ plan: planName, price })
-                : m["common.pricing.payment_for_plan"]({ plan: planName })
-              : m["common.pricing.choose_payment_desc"]()}
+                ? m['common.pricing.payment_for']({ plan: planName, price })
+                : m['common.pricing.payment_for_plan']({ plan: planName })
+              : m['common.pricing.choose_payment_desc']()}
           </DialogDescription>
         </DialogHeader>
 

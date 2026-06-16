@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { m } from "@/paraglide/messages.js";
-import { useState } from "react";
-import type { ComponentType, SVGProps } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { apiPost } from "@/lib/api-client";
-import { cn } from "@/lib/utils";
+import { useState, type ComponentType, type SVGProps } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { Check } from 'lucide-react';
+
+import { apiPost } from '@/lib/api-client';
+import { cn } from '@/lib/utils';
+import { m } from '@/paraglide/messages.js';
+import { Button } from '@/components/ui/button';
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
@@ -53,25 +53,25 @@ export function PricingTable({
   groups: PricingGroup[];
   onCheckout?: (plan: PricingPlan) => void;
 }) {
-    const [activeGroup, setActiveGroup] = useState(groups[0]?.key || "");
+  const [activeGroup, setActiveGroup] = useState(groups[0]?.key || '');
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const currentGroup = groups.find((g) => g.key === activeGroup) || groups[0];
 
   const checkoutMutation = useMutation({
     mutationFn: (plan: PricingPlan) =>
-      apiPost<{ checkout_url?: string }>("/api/payment/checkout", {
+      apiPost<{ checkout_url?: string }>('/api/payment/checkout', {
         product_id: plan.productId,
         product_name: plan.productName || plan.name,
         plan_name: plan.plan?.name || plan.name,
         price: plan.priceInCents,
-        currency: plan.currency || "usd",
-        type: plan.plan ? "subscription" : "one-time",
+        currency: plan.currency || 'usd',
+        type: plan.plan ? 'subscription' : 'one-time',
         description: plan.name,
         plan: plan.plan,
         credits: plan.credits,
         credits_valid_days: plan.creditsValidDays,
-        payment_provider: plan.paymentProvider || "stripe",
+        payment_provider: plan.paymentProvider || 'stripe',
       }),
     onSuccess: (data) => {
       if (data?.checkout_url) {
@@ -100,16 +100,16 @@ export function PricingTable({
       {/* Group tabs — pill toggle */}
       {groups.length > 1 && (
         <div className="flex justify-center">
-          <div className="inline-flex items-center rounded-full border border-border bg-muted/40 p-1">
+          <div className="border-border bg-muted/40 inline-flex items-center rounded-full border p-1">
             {groups.map((group) => (
               <button
                 key={group.key}
                 onClick={() => setActiveGroup(group.key)}
                 className={cn(
-                  "rounded-full px-5 py-1.5 text-sm font-medium transition-colors",
+                  'rounded-full px-5 py-1.5 text-sm font-medium transition-colors',
                   activeGroup === group.key
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {group.label}
@@ -122,27 +122,27 @@ export function PricingTable({
       {/* Plans grid */}
       <div
         className={cn(
-          "mx-auto grid gap-6",
+          'mx-auto grid gap-6',
           currentGroup?.plans.length === 2
-            ? "max-w-3xl sm:grid-cols-2"
+            ? 'max-w-3xl sm:grid-cols-2'
             : currentGroup?.plans.length === 3
-              ? "max-w-5xl sm:grid-cols-2 lg:grid-cols-3"
-              : "max-w-6xl sm:grid-cols-2 lg:grid-cols-4"
+              ? 'max-w-5xl sm:grid-cols-2 lg:grid-cols-3'
+              : 'max-w-6xl sm:grid-cols-2 lg:grid-cols-4'
         )}
       >
         {currentGroup?.plans.map((plan) => (
           <div
             key={plan.id}
             className={cn(
-              "relative flex flex-col rounded-2xl border border-border p-8 transition-all",
+              'border-border relative flex flex-col rounded-2xl border p-8 transition-all',
               plan.featured
-                ? "bg-card shadow-md ring-1 ring-foreground/10"
-                : "bg-background hover:border-foreground/30"
+                ? 'bg-card ring-foreground/10 shadow-md ring-1'
+                : 'bg-background hover:border-foreground/30'
             )}
           >
             {/* Plan name */}
             {plan.name && (
-              <p className="mb-2 text-sm font-medium text-foreground">
+              <p className="text-foreground mb-2 text-sm font-medium">
                 {plan.name}
               </p>
             )}
@@ -153,46 +153,45 @@ export function PricingTable({
                 {plan.price}
               </span>
               {plan.interval && (
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   /{plan.interval}
                 </span>
               )}
             </div>
             {plan.originalPrice && (
-              <span className="mb-1 text-sm text-muted-foreground line-through">
+              <span className="text-muted-foreground mb-1 text-sm line-through">
                 {plan.originalPrice}
               </span>
             )}
 
             {/* Description */}
             {plan.description && (
-              <p className="mb-8 text-sm text-muted-foreground">
+              <p className="text-muted-foreground mb-8 text-sm">
                 {plan.description}
               </p>
             )}
 
             {/* CTA — full-width pill */}
             <Button
-              variant={plan.featured ? "default" : "outline"}
+              variant={plan.featured ? 'default' : 'outline'}
               className="h-10 w-full rounded-full text-sm font-medium"
               onClick={() => handleCheckout(plan)}
               disabled={loadingId === plan.id}
             >
               {loadingId === plan.id
-                ? m["common.pricing.processing"]()
-                : plan.buttonText || m["common.pricing.get_started"]()}
+                ? m['common.pricing.processing']()
+                : plan.buttonText || m['common.pricing.get_started']()}
             </Button>
 
             {/* Features */}
             <ul className="mt-8 space-y-3">
               {plan.features.map((feature, i) => {
-                const isObj = typeof feature !== "string";
-                const Icon: IconComponent =
-                  (isObj && feature.icon) || Check;
+                const isObj = typeof feature !== 'string';
+                const Icon: IconComponent = (isObj && feature.icon) || Check;
                 const label = isObj ? feature.label : feature;
                 return (
                   <li key={i} className="flex items-center gap-2.5 text-sm">
-                    <Icon className="size-4 shrink-0 text-muted-foreground" />
+                    <Icon className="text-muted-foreground size-4 shrink-0" />
                     <span className="text-foreground/90">{label}</span>
                   </li>
                 );

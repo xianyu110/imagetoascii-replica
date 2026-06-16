@@ -1,10 +1,11 @@
-import type { SVGProps } from "react";
-import { m } from "@/paraglide/messages.js";
+import type { SVGProps } from 'react';
+
+import { m } from '@/paraglide/messages.js';
 import {
   SiteFooter,
   type FooterColumn,
   type FooterSocial,
-} from "@/components/site-footer";
+} from '@/components/site-footer';
 
 function GithubIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -23,39 +24,46 @@ function XIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 export function Footer() {
-  
   const columns: FooterColumn[] = [
     {
-      title: m["landing.footer.feature"](),
+      title: m['landing.footer.feature'](),
       links: [
-        { label: m["landing.footer.settings"](), href: "/settings", external: true},
-        { label: m["landing.footer.admin"](), href: "/admin", external: true },
+        {
+          label: m['landing.footer.settings'](),
+          href: '/settings',
+          external: true,
+        },
+        { label: m['landing.footer.admin'](), href: '/admin', external: true },
       ],
     },
     {
-      title: m["landing.footer.resources"](),
+      title: m['landing.footer.resources'](),
       links: [
-        { label: m["landing.footer.blog"](), href: "/blog" },
-        { label: m["landing.footer.github"](), href: "https://github.com", external: true },
+        { label: m['landing.footer.blog'](), href: '/blog' },
+        {
+          label: m['landing.footer.github'](),
+          href: 'https://github.com',
+          external: true,
+        },
       ],
     },
     {
-      title: m["landing.footer.legal"](),
+      title: m['landing.footer.legal'](),
       links: [
-        { label: m["landing.footer.privacy"](), href: "/privacy-policy" },
-        { label: m["landing.footer.terms"](), href: "/terms-of-service" },
+        { label: m['landing.footer.privacy'](), href: '/privacy-policy' },
+        { label: m['landing.footer.terms'](), href: '/terms-of-service' },
       ],
     },
   ];
 
   const socials: FooterSocial[] = [
-    { icon: GithubIcon, href: "https://github.com", label: "GitHub" },
-    { icon: XIcon, href: "https://x.com", label: "X" },
+    { icon: GithubIcon, href: 'https://github.com', label: 'GitHub' },
+    { icon: XIcon, href: 'https://x.com', label: 'X' },
   ];
 
   return (
     <SiteFooter
-      tagline={m["landing.footer.tagline"]()}
+      tagline={m['landing.footer.tagline']()}
       columns={columns}
       socials={socials}
     />

@@ -1,11 +1,10 @@
 import { ArrowRight } from 'lucide-react';
 
-import { BlogCard } from '@/components/blog-card';
-import type { BlogPost } from '@/content/posts';
-import { formatPostDate } from '@/content/posts';
 import { Link } from '@/core/i18n/navigation';
 import { m } from '@/paraglide/messages.js';
 import { getLocale } from '@/paraglide/runtime.js';
+import { BlogCard } from '@/components/blog-card';
+import { formatPostDate, type BlogPost } from '@/content/posts';
 
 // Latest-posts landing section. Posts arrive via props (fetched in the
 // landing route's loader through the blog server functions) so this block
@@ -18,11 +17,11 @@ export function Blog({ posts }: { posts: BlogPost[] }) {
   return (
     <section id="blog" className="px-4 py-24 sm:py-32">
       <div className="mx-auto max-w-5xl">
-        <div className="text-center mb-20">
-          <h2 className="font-serif font-normal text-4xl sm:text-5xl tracking-tight">
+        <div className="mb-20 text-center">
+          <h2 className="font-serif text-4xl font-normal tracking-tight sm:text-5xl">
             {m['landing.blog.title']()}
           </h2>
-          <p className="mt-5 text-muted-foreground max-w-lg mx-auto">
+          <p className="text-muted-foreground mx-auto mt-5 max-w-lg">
             {m['landing.blog.description']()}
           </p>
         </div>
@@ -43,7 +42,7 @@ export function Blog({ posts }: { posts: BlogPost[] }) {
         <div className="mt-10 text-center">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-sm font-medium transition-colors"
           >
             {m['landing.blog.view_all']()}
             <ArrowRight className="size-4" />

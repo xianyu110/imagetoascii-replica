@@ -1,10 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { eq } from 'drizzle-orm';
-import { respData, respErr } from '@/lib/resp';
+
 import { getAuth } from '@/core/auth';
 import { db } from '@/core/db';
-import { user } from '@/config/db/schema';
 import { envConfigs } from '@/config';
+import { user } from '@/config/db/schema';
+import { respData, respErr } from '@/lib/resp';
 
 async function PATCH({ request }: { request: Request }) {
   try {
@@ -17,7 +18,8 @@ async function PATCH({ request }: { request: Request }) {
 
     const body = await request.json().catch(() => ({}));
     const name = typeof body.name === 'string' ? body.name.trim() : undefined;
-    const image = typeof body.image === 'string' ? body.image.trim() : undefined;
+    const image =
+      typeof body.image === 'string' ? body.image.trim() : undefined;
 
     if (name !== undefined && name.length === 0) {
       return respErr('Name cannot be empty');
@@ -32,7 +34,9 @@ async function PATCH({ request }: { request: Request }) {
         const maxBytes =
           (Number(envConfigs.inline_image_max_kb) || 2048) * 1024;
         // base64 length ≈ ceil(bytes / 3) * 4; reverse with a small slack.
-        const approxBytes = Math.floor((image.length - image.indexOf(',') - 1) * 0.75);
+        const approxBytes = Math.floor(
+          (image.length - image.indexOf(',') - 1) * 0.75
+        );
         if (approxBytes > maxBytes) {
           return respErr('Image too large');
         }

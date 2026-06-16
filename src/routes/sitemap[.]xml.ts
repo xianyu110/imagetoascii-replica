@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 
 import { envConfigs } from '@/config';
-import { getLocalPosts, mergePosts } from '@/content/posts';
 import { baseLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
+import { getLocalPosts, mergePosts } from '@/content/posts';
 
 const STATIC_PATHS = [
   '',
@@ -57,9 +57,8 @@ export const Route = createFileRoute('/sitemap.xml')({
 
         // Blog posts: db posts merged with local MDX posts.
         try {
-          const { listPublishedArticles } = await import(
-            '@/modules/posts/service'
-          );
+          const { listPublishedArticles } =
+            await import('@/modules/posts/service');
           const rows = await listPublishedArticles().catch(() => []);
           const dbPosts = rows.map((row) => ({
             slug: row.slug,

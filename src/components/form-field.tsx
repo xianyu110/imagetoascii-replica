@@ -52,7 +52,7 @@ export function TextField({
         disabled={disabled}
         aria-invalid={error ? true : undefined}
       />
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
     </Field>
   );
 }

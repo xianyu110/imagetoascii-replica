@@ -1,12 +1,13 @@
+import { useEffect, useState } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { tDynamic } from "@/core/i18n/dynamic";
-import { m } from "@/paraglide/messages.js";
-import { useEffect, useState } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { apiGet, type PageResult } from "@/lib/api-client";
-import { Card, CardContent } from "@/components/ui/card";
-import { DataTable, type Column } from "@/components/data-table";
-import { cn } from "@/lib/utils";
+
+import { tDynamic } from '@/core/i18n/dynamic';
+import { apiGet, type PageResult } from '@/lib/api-client';
+import { cn } from '@/lib/utils';
+import { m } from '@/paraglide/messages.js';
+import { DataTable, type Column } from '@/components/data-table';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface Credit {
   id: string;
@@ -25,14 +26,14 @@ interface Credit {
 
 const PAGE_SIZE = 10;
 
-const TABS = ["all", "grant", "consume"] as const;
+const TABS = ['all', 'grant', 'consume'] as const;
 type Tab = (typeof TABS)[number];
 
 function CreditsPage() {
   const [page, setPage] = useState(1);
-  const [tab, setTab] = useState<Tab>("all");
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [tab, setTab] = useState<Tab>('all');
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
@@ -44,11 +45,14 @@ function CreditsPage() {
   }, [tab, debouncedSearch]);
 
   const query = useQuery({
-    queryKey: ["admin-credits", page, tab, debouncedSearch],
+    queryKey: ['admin-credits', page, tab, debouncedSearch],
     queryFn: () => {
-      const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
-      if (tab !== "all") params.set("transactionType", tab);
-      if (debouncedSearch) params.set("search", debouncedSearch);
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(PAGE_SIZE),
+      });
+      if (tab !== 'all') params.set('transactionType', tab);
+      if (debouncedSearch) params.set('search', debouncedSearch);
       return apiGet<PageResult<Credit>>(`/api/admin/credits?${params}`);
     },
     placeholderData: keepPreviousData,
@@ -59,51 +63,56 @@ function CreditsPage() {
 
   const columns: Column<Credit>[] = [
     {
-      header: m["admin.credits.transaction_no"](),
+      header: m['admin.credits.transaction_no'](),
       cell: (c) => <span className="font-mono text-xs">{c.transactionNo}</span>,
     },
     {
-      header: m["admin.credits.user"](),
+      header: m['admin.credits.user'](),
       cell: (c) => <span className="text-sm">{c.userEmail || c.userId}</span>,
     },
     {
-      header: m["admin.credits.amount"](),
+      header: m['admin.credits.amount'](),
       cell: (c) => (
-        <span className={cn("font-medium", c.credits > 0 ? "text-green-600" : "text-red-500")}>
+        <span
+          className={cn(
+            'font-medium',
+            c.credits > 0 ? 'text-green-600' : 'text-red-500'
+          )}
+        >
           {c.credits > 0 ? `+${c.credits}` : c.credits}
         </span>
       ),
     },
     {
-      header: m["admin.credits.remaining"](),
+      header: m['admin.credits.remaining'](),
       cell: (c) => c.remainingCredits,
     },
     {
-      header: m["admin.credits.type"](),
+      header: m['admin.credits.type'](),
       cell: (c) => c.transactionType,
     },
     {
-      header: m["admin.credits.scene"](),
-      cell: (c) => c.transactionScene || "—",
+      header: m['admin.credits.scene'](),
+      cell: (c) => c.transactionScene || '—',
     },
     {
-      header: m["admin.credits.description"](),
+      header: m['admin.credits.description'](),
       cell: (c) => (
-        <span className="text-muted-foreground text-sm max-w-[200px] truncate block">
-          {c.description || "—"}
+        <span className="text-muted-foreground block max-w-[200px] truncate text-sm">
+          {c.description || '—'}
         </span>
       ),
     },
     {
-      header: m["admin.credits.expires_at"](),
+      header: m['admin.credits.expires_at'](),
       cell: (c) => (
         <span className="text-muted-foreground text-sm">
-          {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : "—"}
+          {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : '—'}
         </span>
       ),
     },
     {
-      header: m["admin.credits.created_at"](),
+      header: m['admin.credits.created_at'](),
       cell: (c) => (
         <span className="text-muted-foreground text-sm">
           {new Date(c.createdAt).toLocaleDateString()}
@@ -113,22 +122,24 @@ function CreditsPage() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-bold">{m["admin.credits.title"]()}</h1>
-        <p className="text-muted-foreground">{m["admin.credits.description"]()}</p>
+        <h1 className="text-2xl font-bold">{m['admin.credits.title']()}</h1>
+        <p className="text-muted-foreground">
+          {m['admin.credits.description']()}
+        </p>
       </div>
 
-      <div className="flex gap-1 border-b border-border overflow-x-auto overflow-y-hidden">
+      <div className="border-border flex gap-1 overflow-x-auto overflow-y-hidden border-b">
         {TABS.map((tb) => (
           <button
             key={tb}
             onClick={() => setTab(tb)}
             className={cn(
-              "px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px",
+              '-mb-px border-b-2 px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors',
               tab === tb
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? 'border-primary text-foreground'
+                : 'text-muted-foreground hover:text-foreground border-transparent'
             )}
           >
             {tDynamic(`admin.credits.tab_${tb}`)}
@@ -146,7 +157,7 @@ function CreditsPage() {
             pageSize={PAGE_SIZE}
             onPageChange={setPage}
             rowKey={(c) => c.id}
-            emptyText={m["admin.credits.no_credits"]()}
+            emptyText={m['admin.credits.no_credits']()}
             search={search}
             onSearchChange={setSearch}
             onRefresh={() => query.refetch()}

@@ -1,10 +1,10 @@
-import { createAuthClient } from 'better-auth/react';
 import { oneTapClient } from 'better-auth/client/plugins';
+import { createAuthClient } from 'better-auth/react';
 
 const baseURL =
   typeof window !== 'undefined'
     ? window.location.origin
-    : (import.meta.env?.VITE_APP_URL || 'http://localhost:3000');
+    : import.meta.env?.VITE_APP_URL || 'http://localhost:3000';
 
 export const authClient = createAuthClient({ baseURL });
 

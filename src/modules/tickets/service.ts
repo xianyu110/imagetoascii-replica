@@ -1,8 +1,24 @@
-import { eq, and, desc, asc, count, like, or, inArray, type SQL } from 'drizzle-orm';
-import { getUuid } from '@/lib/hash';
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  like,
+  or,
+  type SQL,
+} from 'drizzle-orm';
+
 import { db } from '@/core/db';
-import { ticket, ticketMessage, user } from '@/config/db/schema';
-import type { Ticket, TicketMessage } from '@/config/db/schema';
+import {
+  ticket,
+  ticketMessage,
+  user,
+  type Ticket,
+  type TicketMessage,
+} from '@/config/db/schema';
+import { getUuid } from '@/lib/hash';
 
 export type TicketStatus = 'open' | 'replied' | 'closed';
 export type TicketRole = 'user' | 'admin';
@@ -18,7 +34,9 @@ function parseAttachments(raw: string | null): string[] {
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.filter((u) => typeof u === 'string') : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((u) => typeof u === 'string')
+      : [];
   } catch {
     return [];
   }
@@ -63,7 +81,8 @@ export function sanitizeAttachments(input: unknown): string[] | null {
   if (input.length > 9) return null;
   const urls: string[] = [];
   for (const item of input) {
-    if (typeof item !== 'string' || !item.trim() || item.length > 2048) return null;
+    if (typeof item !== 'string' || !item.trim() || item.length > 2048)
+      return null;
     const url = item.trim();
     if (!url.startsWith('/') && !/^https?:\/\//.test(url)) return null;
     urls.push(url);
@@ -129,7 +148,10 @@ export async function listUserTickets(params: {
   if (params.search) conditions.push(like(ticket.title, `%${params.search}%`));
   const where = and(...conditions);
 
-  const [totalResult] = await db().select({ count: count() }).from(ticket).where(where);
+  const [totalResult] = await db()
+    .select({ count: count() })
+    .from(ticket)
+    .where(where);
   const rows = await db()
     .select()
     .from(ticket)
@@ -207,7 +229,9 @@ export async function listAllTickets(params: {
     .limit(pageSize)
     .offset((page - 1) * pageSize);
 
-  const replies = await getLatestAdminReplies(rows.map((r: { id: string }) => r.id));
+  const replies = await getLatestAdminReplies(
+    rows.map((r: { id: string }) => r.id)
+  );
   const items = rows.map((r: (typeof rows)[number]) => ({
     ...r,
     latestReply: replies[r.id] ?? null,
@@ -220,14 +244,20 @@ export async function listAllTickets(params: {
  * Get a ticket by ID.
  */
 export async function getTicketById(id: string): Promise<Ticket | undefined> {
-  const [row] = await db().select().from(ticket).where(eq(ticket.id, id)).limit(1);
+  const [row] = await db()
+    .select()
+    .from(ticket)
+    .where(eq(ticket.id, id))
+    .limit(1);
   return row;
 }
 
 /**
  * Get a ticket's message thread (oldest first), with sender names.
  */
-export async function getTicketMessages(ticketId: string): Promise<TicketMessageView[]> {
+export async function getTicketMessages(
+  ticketId: string
+): Promise<TicketMessageView[]> {
   const rows = await db()
     .select({
       id: ticketMessage.id,

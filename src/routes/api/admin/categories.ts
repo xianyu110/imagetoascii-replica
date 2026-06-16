@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { respData, respPage, respOk, respErr } from '@/lib/resp';
+
 import { getAuth } from '@/core/auth';
 import { hasPermission } from '@/modules/rbac/service';
 import * as taxonomyService from '@/modules/taxonomy/service';
+import { respData, respErr, respOk, respPage } from '@/lib/resp';
 
 async function checkAdmin(request: Request) {
   const auth = getAuth();
@@ -25,7 +26,10 @@ async function GET({ request }: { request: Request }) {
     }
 
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '10')));
+    const pageSize = Math.min(
+      100,
+      Math.max(1, parseInt(searchParams.get('pageSize') || '10'))
+    );
     const search = searchParams.get('search') || undefined;
 
     const { items, total } = await taxonomyService.list({
@@ -63,7 +67,12 @@ async function PUT({ request }: { request: Request }) {
     await checkAdmin(request);
     const { id, slug, title, description, status } = await request.json();
     if (!id) return respErr('ID is required');
-    const result = await taxonomyService.update(id, { slug, title, description, status });
+    const result = await taxonomyService.update(id, {
+      slug,
+      title,
+      description,
+      status,
+    });
     return respData(result);
   } catch (error: any) {
     return respErr(error.message || 'Internal error');

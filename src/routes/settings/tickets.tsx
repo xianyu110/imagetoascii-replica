@@ -1,13 +1,25 @@
-import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { MessageSquare, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { Plus, MessageSquare } from 'lucide-react';
-import { m } from '@/paraglide/messages.js';
+
 import { tDynamic } from '@/core/i18n/dynamic';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { apiGet, apiPatch, apiPost, type PageResult } from '@/lib/api-client';
+import { cn } from '@/lib/utils';
+import { m } from '@/paraglide/messages.js';
+import { DataTable, type Column } from '@/components/data-table';
+import {
+  ImageUploader,
+  type ImageUploaderValue,
+} from '@/components/image-uploader';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
@@ -20,10 +32,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
-import { DataTable, type Column } from '@/components/data-table';
-import { ImageUploader, type ImageUploaderValue } from '@/components/image-uploader';
-import { apiGet, apiPatch, apiPost, type PageResult } from '@/lib/api-client';
 
 type TicketStatus = 'open' | 'replied' | 'closed';
 
@@ -49,7 +57,9 @@ interface TicketMessageRow {
 /** Extract uploaded URLs from uploader items; true while any upload is in flight. */
 function uploaderState(items: ImageUploaderValue[]) {
   return {
-    urls: items.filter((i) => i.status === 'uploaded' && i.url).map((i) => i.url!),
+    urls: items
+      .filter((i) => i.status === 'uploaded' && i.url)
+      .map((i) => i.url!),
     uploading: items.some((i) => i.status === 'uploading'),
   };
 }
@@ -57,13 +67,18 @@ function uploaderState(items: ImageUploaderValue[]) {
 function AttachmentGrid({ urls }: { urls: string[] }) {
   if (!urls.length) return null;
   return (
-    <div className="flex flex-wrap gap-2 mt-2">
+    <div className="mt-2 flex flex-wrap gap-2">
       {urls.map((url, i) => (
-        <a key={`${url}-${i}`} href={url} target="_blank" rel="noopener noreferrer">
+        <a
+          key={`${url}-${i}`}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <img
             src={url}
             alt=""
-            className="size-16 rounded-md object-cover border border-border hover:opacity-80 transition-opacity"
+            className="border-border size-16 rounded-md border object-cover transition-opacity hover:opacity-80"
           />
         </a>
       ))}
@@ -73,11 +88,12 @@ function AttachmentGrid({ urls }: { urls: string[] }) {
 
 const PAGE_SIZE = 10;
 
-const STATUS_BADGE: Record<TicketStatus, 'default' | 'secondary' | 'outline'> = {
-  open: 'default',
-  replied: 'secondary',
-  closed: 'outline',
-};
+const STATUS_BADGE: Record<TicketStatus, 'default' | 'secondary' | 'outline'> =
+  {
+    open: 'default',
+    replied: 'secondary',
+    closed: 'outline',
+  };
 
 function TicketsPage() {
   const queryClient = useQueryClient();
@@ -115,7 +131,10 @@ function TicketsPage() {
   const listQuery = useQuery({
     queryKey: ['user-tickets', page, debouncedSearch],
     queryFn: () => {
-      const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(PAGE_SIZE),
+      });
       if (debouncedSearch) params.set('keyword', debouncedSearch);
       return apiGet<PageResult<TicketRow>>(`/api/tickets?${params}`);
     },
@@ -128,9 +147,10 @@ function TicketsPage() {
 
   async function openDetail(row: TicketRow) {
     try {
-      const data = await apiGet<{ ticket: TicketRow; messages: TicketMessageRow[] }>(
-        `/api/tickets/${row.id}`
-      );
+      const data = await apiGet<{
+        ticket: TicketRow;
+        messages: TicketMessageRow[];
+      }>(`/api/tickets/${row.id}`);
       setActiveTicket(data.ticket);
       setMessages(data.messages);
       setReplyAttachments([]);
@@ -207,7 +227,7 @@ function TicketsPage() {
       header: m['settings.tickets.title_col'](),
       cell: (r) => (
         <button
-          className="font-medium hover:underline text-left"
+          className="text-left font-medium hover:underline"
           onClick={() => openDetail(r)}
         >
           {r.title}
@@ -257,11 +277,15 @@ function TicketsPage() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">{m['settings.tickets.title']()}</h1>
-          <p className="text-muted-foreground">{m['settings.tickets.description']()}</p>
+          <h1 className="text-2xl font-bold">
+            {m['settings.tickets.title']()}
+          </h1>
+          <p className="text-muted-foreground">
+            {m['settings.tickets.description']()}
+          </p>
         </div>
         <Button onClick={() => setCreateOpen(true)} className="gap-2">
           <Plus className="size-4" />
@@ -293,11 +317,15 @@ function TicketsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{m['settings.tickets.create_title']()}</DialogTitle>
-            <DialogDescription>{m['settings.tickets.create_description']()}</DialogDescription>
+            <DialogDescription>
+              {m['settings.tickets.create_description']()}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="ticket-title">{m['settings.tickets.title_label']()}</Label>
+              <Label htmlFor="ticket-title">
+                {m['settings.tickets.title_label']()}
+              </Label>
               <Input
                 id="ticket-title"
                 value={title}
@@ -307,7 +335,9 @@ function TicketsPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="ticket-content">{m['settings.tickets.content_label']()}</Label>
+              <Label htmlFor="ticket-content">
+                {m['settings.tickets.content_label']()}
+              </Label>
               <Textarea
                 id="ticket-content"
                 value={content}
@@ -345,7 +375,10 @@ function TicketsPage() {
       </Dialog>
 
       {/* Detail Dialog */}
-      <Dialog open={!!activeTicket} onOpenChange={(v) => !v && setActiveTicket(null)}>
+      <Dialog
+        open={!!activeTicket}
+        onOpenChange={(v) => !v && setActiveTicket(null)}
+      >
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -358,7 +391,7 @@ function TicketsPage() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="max-h-[50vh] overflow-y-auto space-y-3 py-2">
+          <div className="max-h-[50vh] space-y-3 overflow-y-auto py-2">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -367,8 +400,8 @@ function TicketsPage() {
                   msg.role === 'admin' ? 'bg-primary/10 mr-8' : 'bg-muted ml-8'
                 )}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="flex items-center gap-1.5 font-medium text-xs">
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-xs font-medium">
                     {msg.role === 'user' && (
                       <Avatar className="size-5">
                         <AvatarImage src={msg.userAvatar || undefined} />
@@ -381,7 +414,7 @@ function TicketsPage() {
                       ? m['settings.tickets.support_team']()
                       : msg.userName || m['settings.tickets.you']()}
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-muted-foreground text-xs">
                     {new Date(msg.createdAt).toLocaleString()}
                   </span>
                 </div>
@@ -425,7 +458,7 @@ function TicketsPage() {
               </DialogFooter>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {m['settings.tickets.closed_notice']()}
             </p>
           )}

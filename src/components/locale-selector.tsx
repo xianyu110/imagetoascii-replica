@@ -1,19 +1,20 @@
-import { localeNames } from "@/config/locale";
-import { getLocale, locales, setLocale } from "@/paraglide/runtime.js";
-import { Languages, Check, Globe, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Globe, Languages } from 'lucide-react';
+
+import { localeNames } from '@/config/locale';
+import { cn } from '@/lib/utils';
+import { getLocale, locales, setLocale } from '@/paraglide/runtime.js';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dropdown-menu';
 
 export function LocaleSelector({
-  variant = "icon",
+  variant = 'icon',
   className,
 }: {
-  variant?: "icon" | "pill";
+  variant?: 'icon' | 'pill';
   className?: string;
 }) {
   const locale = getLocale();
@@ -27,14 +28,14 @@ export function LocaleSelector({
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          "inline-flex items-center transition-colors outline-none",
-          variant === "icon"
-            ? "justify-center rounded-md size-8 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-            : "gap-2 rounded-full border px-4 h-9 text-sm",
+          'inline-flex items-center transition-colors outline-none',
+          variant === 'icon'
+            ? 'text-muted-foreground hover:bg-accent hover:text-accent-foreground size-8 justify-center rounded-md'
+            : 'h-9 gap-2 rounded-full border px-4 text-sm',
           className
         )}
       >
-        {variant === "icon" ? (
+        {variant === 'icon' ? (
           <>
             <Languages className="size-4" />
             <span className="sr-only">Switch language</span>

@@ -1,9 +1,9 @@
+import type { ComponentProps, ReactNode } from 'react';
 import {
   Link as RouterLink,
   useLocation,
   useRouter as useTanStackRouter,
 } from '@tanstack/react-router';
-import type { ComponentProps, ReactNode } from 'react';
 
 import { getLocale } from '@/paraglide/runtime.js';
 

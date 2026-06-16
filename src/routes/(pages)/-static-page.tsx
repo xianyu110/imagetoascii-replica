@@ -1,8 +1,8 @@
-import { notFound, useLoaderData } from '@tanstack/react-router';
-import { m } from "@/paraglide/messages.js";
 import type { ComponentType } from 'react';
+import { notFound, useLoaderData } from '@tanstack/react-router';
 
 import { envConfigs } from '@/config';
+import { m } from '@/paraglide/messages.js';
 import { baseLocale, getLocale, localizeUrl } from '@/paraglide/runtime.js';
 
 type PageMeta = {
@@ -66,24 +66,22 @@ function StaticPage() {
   const { meta, slug, locale } = useLoaderData({
     strict: false,
   }) as LoaderData;
-  
+
   const page = loadPage(slug, locale)!;
   const Content = page.default;
 
   return (
     <article>
-      <header className="mb-6 border-b border-border pb-5">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+      <header className="border-border mb-6 border-b pb-5">
+        <h1 className="text-foreground text-3xl font-semibold tracking-tight md:text-4xl">
           {meta.title}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {meta.description}
-        </p>
-        <p className="mt-2 text-xs text-muted-foreground">
-          {m["common.pages.last_updated"]()}: {meta.updated_at}
+        <p className="text-muted-foreground mt-2 text-sm">{meta.description}</p>
+        <p className="text-muted-foreground mt-2 text-xs">
+          {m['common.pages.last_updated']()}: {meta.updated_at}
         </p>
       </header>
-      <div className="text-[15px] leading-7 text-foreground/90">
+      <div className="text-foreground/90 text-[15px] leading-7">
         <Content />
       </div>
     </article>

@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -7,8 +7,8 @@
    and a Google Fonts <link> (Noto Serif SC) in src/routes/__root.tsx.
    These variables were previously injected by next/font. */
 :root {
-  --font-sans: "Inter Variable", "Inter", sans-serif;
-  --font-serif-display: "Libre Baskerville", serif;
+  --font-sans: 'Inter Variable', 'Inter', sans-serif;
+  --font-serif-display: 'Libre Baskerville', serif;
 }
 
 @theme inline {
@@ -48,11 +48,15 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: var(--font-sans), -apple-system, "system-ui", "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-sans:
+    var(--font-sans), -apple-system, 'system-ui', 'Segoe UI', Helvetica, Arial,
+    sans-serif;
   /* CJK serif glyphs use locally-installed fonts — a Chinese serif webfont
      ships 300+ @font-face subsets (~100KB render-blocking CSS on every page)
      and is not worth it for headings. */
-  --font-serif: var(--font-serif-display), ui-serif, Georgia, Cambria, "Times New Roman", "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", Times, serif;
+  --font-serif:
+    var(--font-serif-display), ui-serif, Georgia, Cambria, 'Times New Roman',
+    'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'SimSun', Times, serif;
 }
 
 @layer base {
@@ -137,18 +141,37 @@
   }
 
   @keyframes drift-a {
-    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-    50%      { transform: translate3d(6%, -4%, 0) scale(1.1); }
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(6%, -4%, 0) scale(1.1);
+    }
   }
   @keyframes drift-b {
-    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-    50%      { transform: translate3d(-5%, 5%, 0) scale(0.95); }
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(-5%, 5%, 0) scale(0.95);
+    }
   }
   @keyframes drift-c {
-    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-    50%      { transform: translate3d(4%, 6%, 0) scale(1.08); }
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(4%, 6%, 0) scale(1.08);
+    }
   }
   @media (prefers-reduced-motion: reduce) {
-    .animate-drift-a, .animate-drift-b, .animate-drift-c { animation: none !important; }
+    .animate-drift-a,
+    .animate-drift-b,
+    .animate-drift-c {
+      animation: none !important;
+    }
   }
 }

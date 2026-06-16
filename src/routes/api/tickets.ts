@@ -1,13 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { respData, respPage, respErr } from '@/lib/resp';
+
 import { getAuth } from '@/core/auth';
-import { enforceMinIntervalRateLimit } from '@/lib/rate-limit';
 import {
   createTicket,
   listUserTickets,
   sanitizeAttachments,
   type TicketStatus,
 } from '@/modules/tickets/service';
+import { enforceMinIntervalRateLimit } from '@/lib/rate-limit';
+import { respData, respErr, respPage } from '@/lib/resp';
 
 const VALID_STATUSES: TicketStatus[] = ['open', 'replied', 'closed'];
 
@@ -19,7 +20,10 @@ async function GET({ request }: { request: Request }) {
 
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '20')));
+    const pageSize = Math.min(
+      100,
+      Math.max(1, parseInt(searchParams.get('pageSize') || '20'))
+    );
     const status = searchParams.get('status') as TicketStatus | null;
     const search = searchParams.get('keyword') || undefined;
 
@@ -60,7 +64,12 @@ async function POST({ request }: { request: Request }) {
     const attachments = sanitizeAttachments(body.attachments);
     if (attachments === null) return respErr('Invalid attachments');
 
-    const row = await createTicket({ userId: session.user.id, title, content, attachments });
+    const row = await createTicket({
+      userId: session.user.id,
+      title,
+      content,
+      attachments,
+    });
     return respData(row);
   } catch (error: any) {
     return respErr(error.message || 'Internal error');

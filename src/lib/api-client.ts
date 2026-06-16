@@ -35,7 +35,11 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
     .json()
     .catch(() => ({ code: -1, message: res.statusText || 'Request failed' }));
   if (json.code !== 0) {
-    throw new ApiError(json.code ?? -1, json.message || 'Request failed', json.data);
+    throw new ApiError(
+      json.code ?? -1,
+      json.message || 'Request failed',
+      json.data
+    );
   }
   // respOk() omits data entirely — callers expecting void get undefined.
   return json.data as T;

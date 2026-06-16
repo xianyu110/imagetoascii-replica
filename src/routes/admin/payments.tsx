@@ -1,13 +1,14 @@
+import { useEffect, useState } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { tDynamic } from "@/core/i18n/dynamic";
-import { m } from "@/paraglide/messages.js";
-import { useEffect, useState } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { apiGet, type PageResult } from "@/lib/api-client";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { DataTable, type Column } from "@/components/data-table";
-import { cn } from "@/lib/utils";
+
+import { tDynamic } from '@/core/i18n/dynamic';
+import { apiGet, type PageResult } from '@/lib/api-client';
+import { cn } from '@/lib/utils';
+import { m } from '@/paraglide/messages.js';
+import { DataTable, type Column } from '@/components/data-table';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface Order {
   id: string;
@@ -27,14 +28,14 @@ interface Order {
 
 const PAGE_SIZE = 10;
 
-const TABS = ["all", "subscription", "one_time"] as const;
+const TABS = ['all', 'subscription', 'one_time'] as const;
 type Tab = (typeof TABS)[number];
 
 function PaymentsPage() {
   const [page, setPage] = useState(1);
-  const [tab, setTab] = useState<Tab>("all");
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [tab, setTab] = useState<Tab>('all');
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
@@ -46,12 +47,15 @@ function PaymentsPage() {
   }, [tab, debouncedSearch]);
 
   const query = useQuery({
-    queryKey: ["admin-payments", page, tab, debouncedSearch],
+    queryKey: ['admin-payments', page, tab, debouncedSearch],
     queryFn: () => {
-      const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
-      if (tab === "subscription") params.set("paymentType", "subscription");
-      if (tab === "one_time") params.set("paymentType", "one_time");
-      if (debouncedSearch) params.set("search", debouncedSearch);
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(PAGE_SIZE),
+      });
+      if (tab === 'subscription') params.set('paymentType', 'subscription');
+      if (tab === 'one_time') params.set('paymentType', 'one_time');
+      if (debouncedSearch) params.set('search', debouncedSearch);
       return apiGet<PageResult<Order>>(`/api/admin/orders?${params}`);
     },
     placeholderData: keepPreviousData,
@@ -62,42 +66,49 @@ function PaymentsPage() {
 
   function formatAmount(amount: number, currency: string) {
     const value = amount / 100;
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: currency || "USD" }).format(value);
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency || 'USD',
+    }).format(value);
   }
 
   const statusVariant = (s: string) => {
-    if (s === "paid") return "default";
-    if (s === "failed") return "destructive";
-    return "secondary";
+    if (s === 'paid') return 'default';
+    if (s === 'failed') return 'destructive';
+    return 'secondary';
   };
 
   const columns: Column<Order>[] = [
     {
-      header: m["admin.payments.order_no"](),
+      header: m['admin.payments.order_no'](),
       cell: (o) => <span className="font-mono text-xs">{o.orderNo}</span>,
     },
     {
-      header: m["admin.payments.user"](),
+      header: m['admin.payments.user'](),
       cell: (o) => <span className="text-sm">{o.userEmail || o.userId}</span>,
     },
     {
-      header: m["admin.payments.amount"](),
-      cell: (o) => <span className="font-medium">{formatAmount(o.amount, o.currency)}</span>,
+      header: m['admin.payments.amount'](),
+      cell: (o) => (
+        <span className="font-medium">
+          {formatAmount(o.amount, o.currency)}
+        </span>
+      ),
     },
     {
-      header: m["admin.payments.status"](),
+      header: m['admin.payments.status'](),
       cell: (o) => <Badge variant={statusVariant(o.status)}>{o.status}</Badge>,
     },
     {
-      header: m["admin.payments.type"](),
-      cell: (o) => o.paymentType || "—",
+      header: m['admin.payments.type'](),
+      cell: (o) => o.paymentType || '—',
     },
     {
-      header: m["admin.payments.provider"](),
+      header: m['admin.payments.provider'](),
       cell: (o) => o.paymentProvider,
     },
     {
-      header: m["admin.payments.created_at"](),
+      header: m['admin.payments.created_at'](),
       cell: (o) => (
         <span className="text-muted-foreground text-sm">
           {new Date(o.createdAt).toLocaleDateString()}
@@ -107,22 +118,24 @@ function PaymentsPage() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-bold">{m["admin.payments.title"]()}</h1>
-        <p className="text-muted-foreground">{m["admin.payments.description"]()}</p>
+        <h1 className="text-2xl font-bold">{m['admin.payments.title']()}</h1>
+        <p className="text-muted-foreground">
+          {m['admin.payments.description']()}
+        </p>
       </div>
 
-      <div className="flex gap-1 border-b border-border overflow-x-auto overflow-y-hidden">
+      <div className="border-border flex gap-1 overflow-x-auto overflow-y-hidden border-b">
         {TABS.map((tb) => (
           <button
             key={tb}
             onClick={() => setTab(tb)}
             className={cn(
-              "px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px",
+              '-mb-px border-b-2 px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors',
               tab === tb
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? 'border-primary text-foreground'
+                : 'text-muted-foreground hover:text-foreground border-transparent'
             )}
           >
             {tDynamic(`admin.payments.tab_${tb}`)}
@@ -140,7 +153,7 @@ function PaymentsPage() {
             pageSize={PAGE_SIZE}
             onPageChange={setPage}
             rowKey={(o) => o.id}
-            emptyText={m["admin.payments.no_payments"]()}
+            emptyText={m['admin.payments.no_payments']()}
             search={search}
             onSearchChange={setSearch}
             onRefresh={() => query.refetch()}
