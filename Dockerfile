@@ -29,6 +29,9 @@ FROM deps AS builder
 
 WORKDIR /app
 
+# NODE_ENV=production so loadEnvFiles() in vite.config.ts reads .env.production
+ENV NODE_ENV=production
+
 COPY . .
 RUN pnpm build
 
