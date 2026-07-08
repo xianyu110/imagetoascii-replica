@@ -82,7 +82,7 @@ export function StylesSection() {
               margin: '8px 0 6px',
             }}
           >
-            Image to ASCII, four character styles
+            Image to ASCII — four character styles to choose from
           </h2>
           <p
             style={{
@@ -93,8 +93,8 @@ export function StylesSection() {
               maxWidth: '560px',
             }}
           >
-            Turn your image into ASCII art in four built-in character styles —
-            tune the detail, invert and color, then export.
+            Pick from four built-in character styles, then fine-tune the detail,
+            invert the mapping, or toggle color before you export.
           </p>
         </div>
 

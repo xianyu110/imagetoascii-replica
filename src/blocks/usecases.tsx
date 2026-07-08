@@ -19,7 +19,7 @@ const USE_CASES: UseCase[] = [
     slug: 'social.ascii',
     title: 'Social & avatars',
     description:
-      'Turn a photo into an ASCII portrait for your X, Discord or Reddit profile, or a post that actually stops the scroll. Copy it as plain text or save a crisp PNG.',
+      'Turn a photo into an ASCII portrait for your X, Discord, or Reddit profile — a post that actually stops the scroll. Copy it as plain text or save a crisp PNG.',
     imageA: '/images/usecases/websites-a.webp',
     imageB: '/images/usecases/websites-b.webp',
     altA: 'ASCII art portrait used as a social media avatar',
@@ -30,7 +30,7 @@ const USE_CASES: UseCase[] = [
     slug: 'wallpapers.ascii',
     title: 'Wallpapers & lock screens',
     description:
-      'Make a one-of-a-kind desktop or phone wallpaper from any picture. Pick a style, push the detail, and download a high-resolution PNG, no sign-up and no watermark.',
+      'Turn your pictures into a one-of-a-kind desktop or phone wallpaper. Pick a style, push the detail, and download a high-resolution PNG — no sign-up, no watermark.',
     imageA: '/images/usecases/wallpapers-a.webp',
     imageB: '/images/usecases/wallpapers-b.webp',
     altA: 'ASCII art wallpaper for desktop and phone',
@@ -41,7 +41,7 @@ const USE_CASES: UseCase[] = [
     slug: 'posters.ascii',
     title: 'Posters & prints',
     description:
-      'Blow an ASCII render up into a poster, sticker or zine page. The high-contrast character grid stays razor-sharp all the way to large-format print.',
+      'Blow an ASCII render up into a poster, sticker, or zine page. The high-contrast character grid stays razor-sharp all the way to large-format print.',
     imageA: '/images/usecases/posters-a.webp',
     imageB: '/images/usecases/posters-b.webp',
     altA: 'ASCII art poster print example',
@@ -52,7 +52,7 @@ const USE_CASES: UseCase[] = [
     slug: 'stickers.ascii',
     title: 'Merch & apparel',
     description:
-      'Print an ASCII render on a tee, tote or mug. The character grid holds up crisp at any size, from a badge to a full back print.',
+      'Print an ASCII render on a tee, tote, or mug. The character grid holds up crisp at any size, from a small badge to a full back print.',
     imageA: '/images/usecases/stickers-a.webp',
     imageB: '/images/usecases/stickers-b.webp',
     altA: 'ASCII art printed on merch and apparel',
@@ -63,7 +63,7 @@ const USE_CASES: UseCase[] = [
     slug: 'readmes.ascii',
     title: 'READMEs & terminals',
     description:
-      'Drop an ASCII banner into a GitHub README, a CLI splash screen or your dotfiles. Copy the raw text and paste it straight in, no image hosting needed.',
+      'Drop an ASCII banner into a GitHub README, a CLI splash screen, or your dotfiles. Copy the raw text and paste it straight in — no image hosting needed.',
     imageA: '/images/usecases/readmes-a.webp',
     imageB: '/images/usecases/readmes-b.webp',
     altA: 'ASCII art banner for a GitHub README',
@@ -74,7 +74,7 @@ const USE_CASES: UseCase[] = [
     slug: 'covers.ascii',
     title: 'Album & cover art',
     description:
-      'Turn a photo into cover art for a playlist, mixtape or zine. Bold, textural and unmistakably yours, exported at full resolution.',
+      'Turn a photo into cover art for a playlist, mixtape, or zine. Bold, textural, and unmistakably yours — exported at full resolution.',
     imageA: '/images/usecases/covers-a.webp',
     imageB: '/images/usecases/covers-b.webp',
     altA: 'ASCII art album cover',
@@ -128,7 +128,7 @@ export function UseCasesSection() {
             margin: '8px 0 6px',
           }}
         >
-          Where the output actually goes
+          Where you can use ASCII art
         </h2>
       </div>
 

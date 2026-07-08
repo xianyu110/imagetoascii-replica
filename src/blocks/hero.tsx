@@ -204,9 +204,9 @@ export function Hero() {
               margin: 0,
             }}
           >
-            Turn any image to
+            Turn any picture into
             <br />
-            ASCII art, text art
+            ASCII art, text art,
             <br />
             and block characters
           </h1>
@@ -224,7 +224,7 @@ export function Hero() {
                 transition: 'background 0.15s, box-shadow 0.15s',
               }}
             >
-              Open the tool
+              Open tool
             </a>
           </div>
         </div>
@@ -239,8 +239,8 @@ export function Hero() {
             color: 'rgba(51, 255, 51, 0.8)',
           }}
         >
-          Turn any photo into ASCII art on your own device, or describe one and
-          let AI create it — no signup, nothing uploaded.
+          Turn any photo into ASCII art right on your device, or describe one
+          and let AI create it — no signup, nothing uploaded.
         </p>
       </div>
     </section>

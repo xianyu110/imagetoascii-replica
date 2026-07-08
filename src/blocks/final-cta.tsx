@@ -95,7 +95,7 @@ export function FinalCTASection() {
               }}
             >
               Every slider, every style, every effect updates the preview
-              instantly, export at up to 4× resolution. Free forever.
+              instantly. Export at up to 4× resolution. Free forever.
             </p>
 
             <a

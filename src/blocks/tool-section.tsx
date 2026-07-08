@@ -51,7 +51,7 @@ export function ToolSection() {
                 'ui-monospace, "SF Mono", Menlo, Monaco, "Courier New", monospace',
             }}
           >
-            Image to ASCII — turn any photo into ASCII art
+            Image to ASCII — turn any image into ASCII art
           </h2>
           <p
             style={{
@@ -62,8 +62,8 @@ export function ToolSection() {
               maxWidth: '560px',
             }}
           >
-            Upload a photo, or describe one and let AI create it — then convert
-            it to text art right in your browser. Free, no signup.
+            Upload a photo, or describe one and let AI create it — then the tool
+            turns it into text art right in your browser. Free, no signup.
           </p>
         </div>
 

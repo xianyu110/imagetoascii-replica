@@ -46,7 +46,7 @@ export function AskAISection() {
               margin: '8px 0 6px',
             }}
           >
-            Feeling fatigue? Ask AI
+            Don't have a photo? Ask AI
           </h2>
           <p
             style={{

@@ -5,12 +5,12 @@ const FAQ_ITEMS = [
   {
     question: 'What is Image to ASCII?',
     answer:
-      'Image to ASCII is a free online tool that turns any image into text-based ASCII art. Upload a photo or generate one with AI, pick a character style, and the converter replaces each small region of the picture with a character that matches its brightness. The result is a picture drawn entirely out of text, which you can export as a PNG or copy as plain text.',
+      'Image to ASCII is a free online tool that turns any image into text-based ASCII art. Upload a photo or generate one with AI, pick a character style, and the converter swaps each small region of the picture for a character that matches its brightness. The result is a picture drawn entirely out of text — export it as a PNG or copy it as plain text.',
   },
   {
     question: 'How do I convert an image to ASCII art?',
     answer:
-      'Open the tool at the top of this page, upload a JPG, PNG, or WebP photo by dragging it onto the drop zone or clicking to browse, and the image to ASCII converter processes it instantly in your browser. Adjust the character style, detail slider, and color toggle until you are happy, then export as a PNG or copy the text.',
+      'Open the tool at the top of this page, upload a JPG, PNG, or WebP by dragging it onto the drop zone or clicking to browse. The image to ASCII converter processes it instantly in your browser. Adjust the character style, detail slider, and color toggle until you like it, then export as a PNG or copy the text.',
   },
   {
     question: 'Can I generate an image with AI instead of uploading one?',
@@ -20,17 +20,17 @@ const FAQ_ITEMS = [
   {
     question: 'Is it free? Do I need to sign up?',
     answer:
-      'The image to ASCII converter is completely free. There is no signup, no watermark, and no export limit. Everything runs in your browser, so there is no server cost to cover.',
+      'The converter is completely free. There is no signup, no watermark, and no export limit. Everything runs in your browser, so there is no server cost to cover.',
   },
   {
     question: 'Do my images get uploaded to a server?',
     answer:
-      'No. The image to ASCII conversion runs entirely on your device using an HTML5 canvas. Your photo is never uploaded anywhere. Only the optional AI image generation sends a short text prompt to the image model — even then, your prompt is not stored.',
+      'No. The conversion runs entirely on your device using an HTML5 canvas. Your photo never goes anywhere. Only the optional AI image generation sends a short text prompt to the image model — and even then, your prompt is not stored.',
   },
   {
     question: 'What can I export, and can I use it commercially?',
     answer:
-      'You can export your ASCII art as a high-resolution PNG (up to 4× the preview resolution) or copy it as plain text straight to your clipboard. You own whatever you create, including commercial use.',
+      'You can export your ASCII art as a high-resolution PNG (up to 4× the preview resolution) or copy it as plain text straight to your clipboard. You own whatever you create — including for commercial use.',
   },
 ];
 
@@ -91,7 +91,7 @@ export function FAQ() {
             }}
           >
             Quick answers about Image to ASCII — what it does, how it works,
-            privacy and pricing.
+            privacy, and pricing.
           </p>
         </div>
 
