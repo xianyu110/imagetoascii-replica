@@ -21,10 +21,8 @@ import { CustomerService } from '@/components/customer-service';
 import { GoogleOneTap } from '@/components/google-one-tap';
 import { Toaster } from '@/components/ui/sonner';
 
-import '@fontsource-variable/inter';
-import '@fontsource/libre-baskerville/400.css';
-import '@fontsource/libre-baskerville/700.css';
-import '@fontsource/libre-baskerville/400-italic.css';
+import '@fontsource/pixelify-sans/400.css';
+import '@fontsource/pixelify-sans/600.css';
 import '@/styles/globals.css';
 
 // Analytics IDs live in the DB config (1h-cached service). Fetched via a
@@ -54,11 +52,6 @@ const getAnalyticsConfigs = createServerFn().handler(async () => {
 export const Route = createRootRoute({
   loader: () => getAnalyticsConfigs(),
   head: () => {
-    // head() runs on the SSR server AND again on the client during hydration.
-    // On the client, app_url falls back to the localhost dev default when
-    // VITE_APP_URL wasn't inlined into the client bundle at build — which would
-    // emit a second, localhost set of hreflang links. Prefer the live origin
-    // on the client so it always matches; the server uses the configured URL.
     const appUrl =
       (typeof window !== 'undefined' && window.location?.origin) ||
       envConfigs.app_url ||
@@ -67,12 +60,35 @@ export const Route = createRootRoute({
       meta: [
         { charSet: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { title: envConfigs.app_name },
-        { name: 'description', content: envConfigs.app_description },
+        { title: 'Image to ASCII — Free Online ASCII Art Generator' },
+        {
+          name: 'description',
+          content:
+            'Image to ASCII — free online converter. Upload a photo or generate one with AI, then turn it into ASCII art in your browser. Export as PNG or text.',
+        },
+        {
+          property: 'og:title',
+          content: 'Image to ASCII — Free Online ASCII Art Generator',
+        },
+        {
+          property: 'og:description',
+          content:
+            'Image to ASCII — free online converter. Upload a photo or generate one with AI, then turn it into ASCII art in your browser. Export as PNG or text.',
+        },
+        { property: 'og:image', content: '/seo/og.jpg' },
+        { property: 'og:type', content: 'website' },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'theme-color', content: '#0a0a0c' },
+        { name: 'color-scheme', content: 'dark' },
       ],
       links: [
-        { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
-        { rel: 'apple-touch-icon', href: '/favicon.svg' },
+        { rel: 'icon', href: '/images/brand/favicon-32.png', sizes: '32x32' },
+        { rel: 'icon', href: '/images/brand/favicon-16.png', sizes: '16x16' },
+        {
+          rel: 'apple-touch-icon',
+          href: '/images/brand/apple-touch-icon.png',
+          sizes: '180x180',
+        },
         ...locales.map((loc) => ({
           rel: 'alternate',
           hrefLang: loc,
@@ -94,11 +110,13 @@ function RootComponent() {
     <QueryClientProvider client={getQueryClient()}>
       <ThemeProvider
         attribute="class"
-        defaultTheme="system"
-        enableSystem
+        defaultTheme="dark"
+        enableSystem={false}
         disableTransitionOnChange
       >
         <Outlet />
+        {/* CRT scanline overlay */}
+        <div className="ia-crt" />
         <Toaster position="top-center" richColors />
         <GoogleOneTap />
         {analytics?.gaId ? (
@@ -123,11 +141,17 @@ function RootComponent() {
 
 function RootDocument({ children }: { children: ReactNode }) {
   return (
-    <html lang={getLocale()} suppressHydrationWarning>
+    <html lang={getLocale()} suppressHydrationWarning className="dark">
       <head>
         <HeadContent />
       </head>
-      <body className="font-sans antialiased">
+      <body
+        className="font-sans antialiased"
+        style={{
+          fontFamily:
+            'ui-monospace, "SF Mono", Menlo, Monaco, "Courier New", monospace',
+        }}
+      >
         {children}
         <Scripts />
       </body>

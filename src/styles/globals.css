@@ -3,10 +3,73 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Font families — loaded via @fontsource imports (Inter, Libre Baskerville)
-   and a Google Fonts <link> (Noto Serif SC) in src/routes/__root.tsx.
-   These variables were previously injected by next/font. */
+/* ============================================================
+   IMAGE→ASCII DESIGN SYSTEM — phosphor-CRT terminal aesthetic:
+   green readout on near-black, mono type, dashed rails/dividers,
+   scanline + vignette overlays.
+   ============================================================ */
+
+@font-face {
+  font-family: 'GeistPixel-Square';
+  src:
+    url('/fonts/GeistPixel-Square.woff2') format('woff2'),
+    url('/fonts/GeistPixel-Square.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
+  /* --- surfaces --- */
+  --ia-bg: #0a0a0c;
+  --ia-panel: #0f0f13;
+  --ia-ink: #0a0a0c;
+
+  /* --- phosphor readout (primary text is green) --- */
+  --ia-fg: #33ff33;
+  --ia-fg-80: rgba(51, 255, 51, 0.8);
+  --ia-fg-70: rgba(51, 255, 51, 0.7);
+  --ia-fg-50: rgba(51, 255, 51, 0.5);
+  --ia-fg-40: rgba(51, 255, 51, 0.4);
+
+  /* --- terminal-chrome accent (rails, prompts, glyph rules) --- */
+  --ia-phos: #57ff8f;
+  --ia-phos-55: rgba(87, 255, 143, 0.55);
+  --ia-phos-38: rgba(87, 255, 143, 0.38);
+  --ia-phos-22: rgba(87, 255, 143, 0.22);
+  --ia-phos-20: rgba(87, 255, 143, 0.2);
+  --ia-phos-16: rgba(87, 255, 143, 0.16);
+
+  /* --- amber call-to-action + cyan hairlines --- */
+  --ia-amber: #ff9d00;
+  --ia-amber-hi: #ffb433;
+  --ia-cyan: #00ffff;
+  --ia-edge: rgba(0, 255, 255, 0.15);
+  --ia-edge-faint: rgba(0, 255, 255, 0.08);
+
+  /* --- muted white text --- */
+  --ia-mute-62: rgba(255, 255, 255, 0.62);
+  --ia-mute-50: rgba(255, 255, 255, 0.5);
+  --ia-mute-42: rgba(255, 255, 255, 0.42);
+
+  /* --- hairlines --- */
+  --ia-hair: rgba(221, 221, 221, 0.1);
+  --ia-white: #ffffff;
+
+  /* --- glow --- */
+  --ia-glow: 0 0 6px rgba(51, 255, 51, 0.55);
+
+  /* --- font stacks --- */
+  --ia-display: 'GeistPixel-Square', ui-monospace, 'SF Mono', Menlo, monospace;
+  --ia-mono: ui-monospace, 'SF Mono', Menlo, Monaco, 'Courier New', monospace;
+
+  /* --- layout --- */
+  --ia-artboard: 1728px;
+  --ia-pad: 129px;
+  --ia-band: 1470px;
+  --ia-inset: 47px;
+
+  /* --- font families --- */
   --font-sans: 'Inter Variable', 'Inter', sans-serif;
   --font-serif-display: 'Libre Baskerville', serif;
 }
@@ -51,9 +114,6 @@
   --font-sans:
     var(--font-sans), -apple-system, 'system-ui', 'Segoe UI', Helvetica, Arial,
     sans-serif;
-  /* CJK serif glyphs use locally-installed fonts — a Chinese serif webfont
-     ships 300+ @font-face subsets (~100KB render-blocking CSS on every page)
-     and is not worth it for headings. */
   --font-serif:
     var(--font-serif-display), ui-serif, Georgia, Cambria, 'Times New Roman',
     'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'SimSun', Times, serif;
@@ -61,74 +121,39 @@
 
 @layer base {
   :root {
-    --background: oklch(0.977 0.004 75);
-    --foreground: oklch(0.275 0.007 60);
-    --card: oklch(0.988 0.003 75);
-    --card-foreground: oklch(0.275 0.007 60);
-    --popover: oklch(0.988 0.003 75);
-    --popover-foreground: oklch(0.275 0.007 60);
-    --primary: oklch(0.22 0.005 60);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.948 0.006 75);
-    --secondary-foreground: oklch(0.275 0.007 60);
-    --muted: oklch(0.948 0.006 75);
-    --muted-foreground: oklch(0.5 0.005 60);
-    --accent: oklch(0.948 0.006 75);
-    --accent-foreground: oklch(0.275 0.007 60);
+    --background: oklch(0.06 0 0);
+    --foreground: oklch(0.65 0.22 148);
+    --card: oklch(0.08 0 0);
+    --card-foreground: oklch(0.65 0.22 148);
+    --popover: oklch(0.08 0 0);
+    --popover-foreground: oklch(0.65 0.22 148);
+    --primary: oklch(0.65 0.22 148);
+    --primary-foreground: oklch(0.06 0 0);
+    --secondary: oklch(0.12 0 0);
+    --secondary-foreground: oklch(0.65 0.22 148);
+    --muted: oklch(0.12 0 0);
+    --muted-foreground: rgba(255, 255, 255, 0.5);
+    --accent: oklch(0.12 0 0);
+    --accent-foreground: oklch(0.65 0.22 148);
     --destructive: oklch(0.577 0.245 27.325);
     --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.908 0.005 75);
-    --input: oklch(0.908 0.005 75);
-    --ring: oklch(0.708 0 0);
+    --border: rgba(221, 221, 221, 0.1);
+    --input: rgba(255, 255, 255, 0.12);
+    --ring: oklch(0.65 0.22 148);
     --chart-1: oklch(0.646 0.222 41.116);
     --chart-2: oklch(0.6 0.118 184.714);
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
     --radius: 0.625rem;
-    --sidebar: oklch(0.988 0.003 75);
-    --sidebar-foreground: oklch(0.275 0.007 60);
-    --sidebar-primary: oklch(0.22 0.005 60);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.948 0.006 75);
-    --sidebar-accent-foreground: oklch(0.275 0.007 60);
-    --sidebar-border: oklch(0.908 0.005 75);
-    --sidebar-ring: oklch(0.708 0 0);
-  }
-
-  .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.18 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.205 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    --sidebar: oklch(0.06 0 0);
+    --sidebar-foreground: oklch(0.65 0.22 148);
+    --sidebar-primary: oklch(0.65 0.22 148);
+    --sidebar-primary-foreground: oklch(0.06 0 0);
+    --sidebar-accent: oklch(0.12 0 0);
+    --sidebar-accent-foreground: oklch(0.65 0.22 148);
+    --sidebar-border: rgba(221, 221, 221, 0.1);
+    --sidebar-ring: oklch(0.65 0.22 148);
   }
 }
 
@@ -138,8 +163,57 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--ia-mono);
   }
 
+  /* CRT scanline overlay */
+  .ia-crt {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.11) 0px,
+      rgba(0, 0, 0, 0.11) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+
+  /* Phosphor glow on headings */
+  h1,
+  h2,
+  h3,
+  .ia-brand,
+  .ia-rotator {
+    text-shadow: var(--ia-glow);
+  }
+
+  /* Text rotator animation for hero */
+  .ia-rotator {
+    display: inline-flex;
+    align-items: baseline;
+    white-space: nowrap;
+    min-width: 14ch;
+    justify-content: flex-start;
+  }
+
+  @keyframes ia-blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .ia-cursor-blink {
+    animation: ia-blink 1s step-end infinite;
+  }
+
+  /* Keyframe animations from original */
   @keyframes drift-a {
     0%,
     100% {
@@ -167,6 +241,7 @@
       transform: translate3d(4%, 6%, 0) scale(1.08);
     }
   }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-drift-a,
     .animate-drift-b,

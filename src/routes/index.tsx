@@ -1,69 +1,62 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { envConfigs } from '@/config';
-import { m } from '@/paraglide/messages.js';
 import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
-import { Blog } from '@/blocks/blog';
-import { CTA } from '@/blocks/cta';
+import { AskAISection } from '@/blocks/ask-ai';
 import { FAQ } from '@/blocks/faq';
-import { Features } from '@/blocks/features';
+import { FinalCTASection } from '@/blocks/final-cta';
 import { Footer } from '@/blocks/footer';
 import { Header } from '@/blocks/header';
 import { Hero } from '@/blocks/hero';
-import { Pricing } from '@/blocks/pricing';
-import { SupportWidget } from '@/blocks/support-widget';
-import { getBlogPostsFn } from '@/content/posts/server';
+import { HowItWorksSection } from '@/blocks/how-it-works';
+import { StylesSection } from '@/blocks/styles-section';
+import { ToolSection } from '@/blocks/tool-section';
+import { UseCasesSection } from '@/blocks/usecases';
 
 /**
- * Default landing page — demo content. Rewrite this file (and the blocks in
- * src/blocks/) for your project. The primitives in src/components/ stay.
- * See /quick-start or /clone-website to automate the rewrite.
+ * Image to ASCII — landing page clone.
+ * Phosphor-green CRT terminal aesthetic on near-black background.
  */
 function HomePage() {
-  const { posts } = Route.useLoaderData();
-
   return (
-    <div className="bg-background text-foreground flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-[#0a0a0c] text-[#33ff33]">
       <Header />
       <main>
         <Hero />
-        <Features />
-        <Pricing />
+        <ToolSection />
+        <AskAISection />
+        <StylesSection />
+        <UseCasesSection />
+        <HowItWorksSection />
         <FAQ />
-        <Blog posts={posts} />
-        <CTA />
+        <FinalCTASection />
       </main>
       <Footer />
-      <SupportWidget />
     </div>
   );
 }
 
 export const Route = createFileRoute('/')({
-  loader: async () => {
+  loader: () => {
     const locale = getLocale();
-    const posts = await getBlogPostsFn({ data: { locale, limit: 3 } });
-    return { locale, posts };
+    return { locale };
   },
   head: ({ loaderData }) => {
     const locale = loaderData?.locale ?? 'en';
-    const urlFor = (loc: string) =>
-      localizeUrl(`${envConfigs.app_url}/`, { locale: loc as any }).href;
     return {
       meta: [
         {
           name: 'description',
-          content: m['landing.hero.subheadline']({}, { locale: locale as any }),
+          content:
+            'Image to ASCII — free online converter. Upload a photo or generate one with AI, then turn it into ASCII art in your browser. Export as PNG or text.',
         },
       ],
       links: [
-        { rel: 'canonical', href: urlFor(locale) },
         ...locales.map((loc) => ({
           rel: 'alternate',
           hrefLang: loc,
-          href: urlFor(loc),
+          href: `/${loc === 'en' ? '' : loc}`,
         })),
-        { rel: 'alternate', hrefLang: 'x-default', href: urlFor('en') },
+        { rel: 'alternate', hrefLang: 'x-default', href: '/' },
       ],
     };
   },

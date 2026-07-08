@@ -27,7 +27,7 @@ export function BuiltWithShipAny({ className }: { className?: string }) {
       <span aria-hidden className="text-red-500">
         ❤️
       </span>
-      <span>ShipAny</span>
+      <span>MaynorAI</span>
     </a>
   );
 }

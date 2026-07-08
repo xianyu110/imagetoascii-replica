@@ -1,71 +1,189 @@
-import type { SVGProps } from 'react';
+import { Link } from '@/core/i18n/navigation';
+import { BuiltWithShipAny } from '@/components/built-with-shipany';
 
-import { m } from '@/paraglide/messages.js';
-import {
-  SiteFooter,
-  type FooterColumn,
-  type FooterSocial,
-} from '@/components/site-footer';
-
-function GithubIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-      <path d="M12 .5C5.73.5.75 5.48.75 11.75c0 4.97 3.22 9.18 7.69 10.67.56.1.77-.24.77-.54 0-.27-.01-1.15-.02-2.09-3.13.68-3.79-1.33-3.79-1.33-.51-1.3-1.25-1.65-1.25-1.65-1.02-.7.08-.68.08-.68 1.13.08 1.72 1.16 1.72 1.16 1 1.72 2.63 1.22 3.27.93.1-.72.39-1.22.71-1.5-2.5-.29-5.13-1.25-5.13-5.56 0-1.23.44-2.24 1.16-3.03-.12-.29-.5-1.44.11-3 0 0 .95-.3 3.1 1.16.9-.25 1.86-.37 2.82-.38.96.01 1.92.13 2.82.38 2.15-1.46 3.1-1.16 3.1-1.16.61 1.56.23 2.71.11 3 .72.79 1.16 1.8 1.16 3.03 0 4.32-2.64 5.27-5.15 5.55.4.35.76 1.03.76 2.08 0 1.5-.01 2.72-.01 3.09 0 .3.2.65.78.54 4.47-1.49 7.68-5.7 7.68-10.67C23.25 5.48 18.27.5 12 .5Z" />
-    </svg>
-  );
-}
-
-function XIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
-    </svg>
-  );
-}
+// Footer matching imagetoascii.app exactly
+// Terminal-style tree nav with green-on-black phosphor aesthetic
 
 export function Footer() {
-  const columns: FooterColumn[] = [
-    {
-      title: m['landing.footer.feature'](),
-      links: [
-        {
-          label: m['landing.footer.settings'](),
-          href: '/settings',
-          external: true,
-        },
-        { label: m['landing.footer.admin'](), href: '/admin', external: true },
-      ],
-    },
-    {
-      title: m['landing.footer.resources'](),
-      links: [
-        { label: m['landing.footer.blog'](), href: '/blog' },
-        {
-          label: m['landing.footer.github'](),
-          href: 'https://github.com',
-          external: true,
-        },
-      ],
-    },
-    {
-      title: m['landing.footer.legal'](),
-      links: [
-        { label: m['landing.footer.privacy'](), href: '/privacy-policy' },
-        { label: m['landing.footer.terms'](), href: '/terms-of-service' },
-      ],
-    },
-  ];
-
-  const socials: FooterSocial[] = [
-    { icon: GithubIcon, href: 'https://github.com', label: 'GitHub' },
-    { icon: XIcon, href: 'https://x.com', label: 'X' },
-  ];
+  const year = new Date().getFullYear();
 
   return (
-    <SiteFooter
-      tagline={m['landing.footer.tagline']()}
-      columns={columns}
-      socials={socials}
-    />
+    <footer
+      className="ia-foot"
+      style={{
+        fontFamily:
+          'ui-monospace, "SF Mono", Menlo, Monaco, "Courier New", monospace',
+        padding: '64px 0 32px',
+        color: '#33ff33',
+        borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+      }}
+    >
+      <div
+        className="mx-auto"
+        style={{
+          maxWidth: '1080px',
+          padding: '0 24px',
+        }}
+      >
+        <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-3">
+          {/* Brand + description */}
+          <div>
+            <Link
+              to="/"
+              className="ia-foot-brand ia-brand mb-3 flex items-center no-underline"
+              style={{ color: '#33ff33' }}
+            >
+              <img
+                src="/images/brand/logo.png"
+                alt=""
+                width={28}
+                height={28}
+                style={{
+                  borderRadius: '7px',
+                  border: '1px solid rgba(255, 255, 255, 0.25)',
+                  boxShadow: 'rgba(0,0,0,0.4) 0 0 0 1px',
+                  marginRight: '9px',
+                }}
+              />
+              <span
+                style={{
+                  fontFamily:
+                    '"Pixelify Sans", ui-monospace, "SF Mono", Menlo, Monaco, "Courier New", monospace',
+                  fontSize: '17.6px',
+                  fontWeight: 600,
+                  color: '#ffffff',
+                  textShadow: '0 0 6px rgba(51,255,51,0.55)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Image to ASCII
+              </span>
+            </Link>
+            <p
+              style={{
+                fontSize: '14px',
+                lineHeight: '22px',
+                color: 'rgba(255, 255, 255, 0.55)',
+                margin: 0,
+              }}
+            >
+              An in-browser image-to-ASCII converter. Drop in a photo or
+              generate one with AI — it all runs on your device.
+            </p>
+          </div>
+
+          {/* pages/ nav */}
+          <div>
+            <h4
+              style={{
+                fontSize: '11.52px',
+                fontWeight: 500,
+                lineHeight: '20px',
+                letterSpacing: '0.18em',
+                color: 'rgba(255, 255, 255, 0.42)',
+                textTransform: 'uppercase',
+                fontFamily: 'ui-monospace, Menlo, monospace',
+                marginBottom: '12px',
+              }}
+            >
+              pages/
+            </h4>
+            <ul className="m-0 list-none space-y-1 p-0">
+              <li
+                style={{
+                  fontFamily: 'ui-monospace, Menlo, monospace',
+                  fontSize: '14px',
+                  color: 'rgba(255, 255, 255, 0.55)',
+                }}
+              >
+                ├─{' '}
+                <a
+                  href="#top"
+                  className="text-[#33ff33]/70 no-underline transition-colors hover:text-[#33ff33]"
+                >
+                  home
+                </a>
+              </li>
+              <li
+                style={{
+                  fontFamily: 'ui-monospace, Menlo, monospace',
+                  fontSize: '14px',
+                  color: 'rgba(255, 255, 255, 0.55)',
+                }}
+              >
+                ├─{' '}
+                <a
+                  href="#usecases"
+                  className="text-[#33ff33]/70 no-underline transition-colors hover:text-[#33ff33]"
+                >
+                  usecases
+                </a>
+              </li>
+              <li
+                style={{
+                  fontFamily: 'ui-monospace, Menlo, monospace',
+                  fontSize: '14px',
+                  color: 'rgba(255, 255, 255, 0.55)',
+                }}
+              >
+                └─{' '}
+                <a
+                  href="#faq"
+                  className="text-[#33ff33]/70 no-underline transition-colors hover:text-[#33ff33]"
+                >
+                  faqs
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* start/ nav */}
+          <div>
+            <h4
+              style={{
+                fontSize: '11.52px',
+                fontWeight: 500,
+                lineHeight: '20px',
+                letterSpacing: '0.18em',
+                color: 'rgba(255, 255, 255, 0.42)',
+                textTransform: 'uppercase',
+                fontFamily: 'ui-monospace, Menlo, monospace',
+                marginBottom: '12px',
+              }}
+            >
+              start/
+            </h4>
+            <ul className="m-0 list-none p-0">
+              <li
+                style={{
+                  fontFamily: 'ui-monospace, Menlo, monospace',
+                  fontSize: '14px',
+                  color: 'rgba(255, 255, 255, 0.55)',
+                }}
+              >
+                └─{' '}
+                <a
+                  href="#tool"
+                  className="text-[#33ff33]/70 no-underline transition-colors hover:text-[#33ff33]"
+                >
+                  ▸ open tool
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div
+          className="flex flex-col items-center justify-between gap-3 pt-5 sm:flex-row"
+          style={{ borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}
+        >
+          <BuiltWithShipAny />
+          <span style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)' }}>
+            © {year} Image to ASCII. All rights reserved.
+          </span>
+        </div>
+      </div>
+    </footer>
   );
 }
