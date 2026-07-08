@@ -25,6 +25,17 @@ import '@fontsource/pixelify-sans/400.css';
 import '@fontsource/pixelify-sans/600.css';
 import '@/styles/globals.css';
 
+const isStaticExport = import.meta.env.VITE_STATIC_EXPORT === 'true';
+const staticBasePath = import.meta.env.VITE_BASE_PATH || '';
+
+function withStaticBasePath(path: string) {
+  if (!isStaticExport || !staticBasePath || !path.startsWith('/')) {
+    return path;
+  }
+
+  return `${staticBasePath}${path}`;
+}
+
 // Analytics IDs live in the DB config (1h-cached service). Fetched via a
 // server function so drizzle/db code never reaches the client bundle.
 const getAnalyticsConfigs = createServerFn().handler(async () => {
@@ -75,18 +86,26 @@ export const Route = createRootRoute({
           content:
             'Image to ASCII — free online converter. Upload a photo or generate one with AI, then turn it into ASCII art in your browser. Export as PNG or text.',
         },
-        { property: 'og:image', content: '/seo/og.jpg' },
+        { property: 'og:image', content: withStaticBasePath('/seo/og.jpg') },
         { property: 'og:type', content: 'website' },
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'theme-color', content: '#0a0a0c' },
         { name: 'color-scheme', content: 'dark' },
       ],
       links: [
-        { rel: 'icon', href: '/images/brand/favicon-32.png', sizes: '32x32' },
-        { rel: 'icon', href: '/images/brand/favicon-16.png', sizes: '16x16' },
+        {
+          rel: 'icon',
+          href: withStaticBasePath('/images/brand/favicon-32.png'),
+          sizes: '32x32',
+        },
+        {
+          rel: 'icon',
+          href: withStaticBasePath('/images/brand/favicon-16.png'),
+          sizes: '16x16',
+        },
         {
           rel: 'apple-touch-icon',
-          href: '/images/brand/apple-touch-icon.png',
+          href: withStaticBasePath('/images/brand/apple-touch-icon.png'),
           sizes: '180x180',
         },
         ...locales.map((loc) => ({
@@ -118,7 +137,7 @@ function RootComponent() {
         {/* CRT scanline overlay */}
         <div className="ia-crt" />
         <Toaster position="top-center" richColors />
-        <GoogleOneTap />
+        {isStaticExport ? null : <GoogleOneTap />}
         {analytics?.gaId ? (
           <GoogleAnalytics measurementId={analytics.gaId} />
         ) : null}

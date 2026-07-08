@@ -6,6 +6,7 @@ import handler from './dist/server/server.js';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const HOST = process.env.HOST || '0.0.0.0';
+const BASE_PATH = process.env.VITE_BASE_PATH || '';
 
 const PUBLIC_DIR = new URL('./dist/client/', import.meta.url).pathname;
 const STATIC_EXTENSIONS = new Set([
@@ -49,8 +50,10 @@ const server = createServer(async (req, res) => {
   );
   const path = url.pathname;
 
-  // Strip the subpath prefix if present
-  const cleanPath = path.replace(/^\/imagetoascii-replica/, '') || '/';
+  const cleanPath =
+    BASE_PATH && path.startsWith(BASE_PATH)
+      ? path.slice(BASE_PATH.length) || '/'
+      : path;
 
   // Serve static assets from dist/client/
   const ext = extname(cleanPath).toLowerCase();
@@ -80,14 +83,11 @@ const server = createServer(async (req, res) => {
     const response = await handler.fetch(request);
     const html = await response.text();
 
-    // Rewrite paths for GitHub Pages subpath
-    const fixedHtml = html.replace(/=(['"])\//g, '=$1/imagetoascii-replica/');
-
     res.writeHead(response.status, {
       'Content-Type': 'text/html; charset=utf-8',
-      'Content-Length': Buffer.byteLength(fixedHtml),
+      'Content-Length': Buffer.byteLength(html),
     });
-    res.end(fixedHtml);
+    res.end(html);
   } catch (err) {
     console.error('SSR error:', err);
     res.writeHead(500);

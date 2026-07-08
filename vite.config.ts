@@ -10,7 +10,14 @@ import { loadEnvFiles } from './src/lib/env';
 
 loadEnvFiles();
 
+const routerBasepath =
+  process.env.VITE_BASE_PATH || process.env.TSS_ROUTER_BASEPATH || '/';
+
 export default defineConfig({
+  base:
+    routerBasepath && routerBasepath !== '/'
+      ? `${routerBasepath.replace(/\/$/, '')}/`
+      : '/',
   server: {
     port: 3000,
   },
@@ -52,6 +59,9 @@ export default defineConfig({
     }),
     tanstackStart({
       srcDirectory: 'src',
+      router: {
+        basepath: routerBasepath,
+      },
     }),
     viteReact(),
   ],

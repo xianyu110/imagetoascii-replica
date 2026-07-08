@@ -4,9 +4,12 @@ import { deLocalizeUrl, localizeUrl } from '@/paraglide/runtime.js';
 
 import { routeTree } from './routeTree.gen';
 
+const basepath = import.meta.env.VITE_BASE_PATH || '/';
+
 export function getRouter() {
   const router = createRouter({
     routeTree,
+    basepath,
     defaultPreload: 'intent',
     scrollRestoration: true,
     // Paraglide owns locale prefixes: incoming URLs are de-localized before
