@@ -31,6 +31,7 @@ WORKDIR /app
 
 # NODE_ENV=production so loadEnvFiles() in vite.config.ts reads .env.production
 ENV NODE_ENV=production
+ENV NITRO_PRESET=node-server
 
 COPY . .
 RUN pnpm build
@@ -42,7 +43,8 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 appuser
 
-COPY --from=builder --chown=appuser:nodejs /app/.output ./.output
+COPY --from=builder --chown=appuser:nodejs /app/dist ./dist
+COPY --from=builder --chown=appuser:nodejs /app/public ./public
 
 USER appuser
 
@@ -52,4 +54,4 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOST=0.0.0.0
 
-CMD ["node", ".output/server/index.mjs"]
+CMD ["node", "dist/server/server.js"]
